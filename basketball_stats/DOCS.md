@@ -44,8 +44,8 @@ Reiter **Spiel erfassen**. Die Ansicht ist so gebaut, dass alle Schaltflächen o
 3. Die Art des Spiels wählen: **Hauptrunde**, **Playoffs** oder **Testspiel**. Die Auswahl bleibt für das nächste Spiel stehen.
 4. Vor dem Anpfiff **Starting 5** antippen, wenn der Spieler in der Startformation steht.
 5. Während des Spiels mittippen:
-   - **Viertel**: Mit **1. V** bis **4. V** das laufende Viertel wählen. Alle Eingaben zählen für das gewählte Viertel; unter jedem Viertel stehen dessen Punkte.
-   - **Einsatzzeit**: Die Uhr-Schaltfläche antippen, wenn der Spieler aufs Feld kommt, und wieder antippen, wenn er ausgewechselt wird. Die Uhr zählt die tatsächlich vergangene Zeit – bei längeren Unterbrechungen also anhalten. Die Minuten lassen sich unter **Spieldaten** von Hand korrigieren.
+   - **Quarter**: Mit **Q1** bis **Q4** das laufende Quarter wählen, bei einer Verlängerung **OT**. Alle Eingaben zählen für den gewählten Abschnitt; darunter stehen jeweils dessen Punkte.
+   - **Einsatzzeit**: Die Uhr-Schaltfläche antippen, wenn der Spieler aufs Feld kommt, und wieder antippen, wenn er ausgewechselt wird. Sie zeigt oben die Gesamtzeit und darunter die Zeit im laufenden Quarter; beim Wechsel des Quarters zählt die Zeit dort weiter. Die Uhr zählt die tatsächlich vergangene Zeit – bei längeren Unterbrechungen also anhalten. Unter **Spieldaten** stehen die Zeiten aller Quarter; die Gesamtminuten lassen sich dort von Hand korrigieren, die Aufteilung auf die Quarter bleibt dabei im Verhältnis erhalten.
    - **Würfe** (Freiwurf, 2er, 3er): **Treffer** oder **Fehlwurf** antippen. Punkte und Quoten rechnet die Seite selbst aus.
    - **Spielzüge**: Offensiv- und Defensiv-Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls durch Antippen der Kachel hochzählen.
 6. Vertippt? **Rückgängig** nimmt die letzte Eingabe zurück; mit **−** lässt sich jeder Wert einzeln korrigieren.
@@ -69,7 +69,7 @@ Reiter **Auswertung**:
 - **Schnitt pro Spiel** und **Trefferquoten** über die Spiele der gewählten Art.
 - Filter **Alle / Heim / Auswärts**.
 - **Minuten** und **Starting 5** stehen bei den Schnitten: durchschnittliche Einsatzzeit der Spiele mit erfasster Zeit und die Zahl der Starts.
-- **Nach Vierteln**: Punkte, Wurfquote, Rebounds und Assists je Viertel als Schnitt pro Spiel. Erscheint, sobald ein Spiel mit Vierteln erfasst wurde; ältere Spiele ohne Viertel zählen hier nicht mit.
+- **Nach Quarter**: Punkte, Wurfquote, Rebounds, Assists und Minuten je Quarter als Schnitt pro Spiel; eine Zeile **OT**, wenn es eine Overtime gab. Erscheint, sobald ein Spiel mit Quartern erfasst wurde; ältere Spiele ohne Quarter zählen hier nicht mit.
 - **Verlauf**: Diagramme über den Zeitverlauf, ein Balken pro Spiel in zeitlicher Reihenfolge.
   - Über die Auswahl-Schaltflächen legst du fest, welche Statistiken angezeigt werden: Punkte, Wurf-, Zweier-, Dreier- und Freiwurfquote, Rebounds (gesamt, offensiv, defensiv), Assists, Steals, Blocks, Ballverluste, Fouls und Einsatzzeit. Jede gewählte Statistik bekommt ein eigenes Diagramm.
   - Die gestrichelte Linie ist der Durchschnitt, der Wert steht oben rechts (Ø).

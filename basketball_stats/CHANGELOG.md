@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.10.0 – 2026-11-16
+
+- Neu: Overtime (OT) als fünfter Abschnitt neben Q1 bis Q4
+- „Viertel“ heißt jetzt „Quarter“ (Q1–Q4)
+- Die Einsatzzeit wird zusätzlich je Quarter gemessen; die Uhr-Schaltfläche zeigt Gesamtzeit und Zeit im laufenden Quarter
+- Auswertung „Nach Quarter“ mit Minuten je Quarter; Overtime erscheint dort nur, wenn es eine gab
+- CSV-Export um Punkte und Minuten je Quarter und Overtime erweitert
+
 ## 1.9.0 – 2026-11-16
 
 - Neu: Viertel – beim Erfassen wird das laufende Viertel gewählt, alle Eingaben zählen für dieses Viertel; Auswertung „Nach Vierteln“

@@ -187,14 +187,15 @@ nav button{padding:0 4px}
 .hb .tr i{display:block;height:100%;background:var(--gold);border-radius:0 4px 4px 0;min-width:2px}
 .hb .tr i.zero{background:var(--mu);opacity:.6}
 .hb .v{font:400 22px/1 'Instrument Serif',Georgia,serif;text-align:right;white-space:nowrap}
-/* Viertel, Einsatzzeit, Starting 5 */
+/* Quarter, Einsatzzeit, Starting 5 */
 .qrow{display:flex;gap:8px}
-.qrow .seg{flex:2.1 1 0;min-height:42px;min-width:0}
+.qrow .seg{flex:3.4 1 0;min-height:42px;min-width:0}
 .qrow .seg button{padding:3px 0}
-.tbtn{flex:1 1 0;min-width:0;min-height:42px;border-radius:14px;border:1px solid var(--line2);background:transparent;color:var(--tx);font-size:12px;font-weight:700;padding:0 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbtn{flex:1.45 1 0;min-width:0;min-height:42px;border-radius:14px;border:1px solid var(--line2);background:transparent;color:var(--tx);font-size:12px;font-weight:700;padding:0 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
 .tbtn small{font-size:10px;color:var(--mu);font-weight:600;white-space:nowrap}
 .tbtn.on{background:var(--act);border-color:var(--gold);color:var(--gold)}
 .tbtn.on small{color:var(--gold)}
+#stBtn{flex:1 1 0}
 .hidden{display:none!important}
 </style>
 </head>
@@ -240,6 +241,7 @@ nav button{padding:0 4px}
         <div class="field light" style="flex:1 1 140px"><label for="gdate">Datum</label><input id="gdate" type="date"></div>
       </div>
       <div class="field light"><label for="mins">Einsatzzeit in Minuten (wird von der Uhr gezählt, hier korrigierbar)</label><input id="mins" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+      <p class="note" style="text-align:left" id="qTimes"></p>
       <div class="seg" role="group" aria-label="Heim oder Auswärts">
         <button type="button" id="vHome" data-act="venue" data-v="home">Heimspiel</button>
         <button type="button" id="vAway" data-act="venue" data-v="away">Auswärts</button>
@@ -252,7 +254,7 @@ nav button{padding:0 4px}
     </div>
   </details>
   <div class="qrow">
-    <div class="seg two" id="qSeg" role="group" aria-label="Viertel auswählen"></div>
+    <div class="seg two" id="qSeg" role="group" aria-label="Quarter auswählen"></div>
     <button type="button" class="tbtn" id="tBtn" data-act="time"></button>
     <button type="button" class="tbtn" id="stBtn" data-act="st"></button>
   </div>
@@ -292,7 +294,7 @@ nav button{padding:0 4px}
 
     <section aria-label="Schnitt pro Spiel"><h3>Schnitt pro Spiel</h3><div class="grid3" id="avgTiles"></div></section>
     <section aria-label="Trefferquoten"><h3>Trefferquoten</h3><div class="grid3" id="pctTiles"></div></section>
-    <section aria-label="Nach Vierteln" id="qSec"><h3>Nach Vierteln</h3>
+    <section aria-label="Nach Quarter" id="qSec"><h3>Nach Quarter</h3>
       <div class="card tblwrap"><table id="qTable"></table></div>
       <p class="note" style="text-align:left" id="qNote"></p>
     </section>
@@ -368,7 +370,9 @@ nav button{padding:0 4px}
     return out.sort(function (a, b) { return a.localeCompare(b, 'de', { numeric: true }); });
   }
   var barSel = {}, TF = [];
-  function blankQ() { return [blank(), blank(), blank(), blank()]; }
+  var QN = ['Q1', 'Q2', 'Q3', 'Q4', 'OT'];
+  function blankQ() { return QN.map(function () { return blank(); }); }
+  function normQs(a) { return QN.map(function (x, i) { return Math.max(0, Number(Array.isArray(a) ? a[i] : 0) || 0); }); }
   function normQ(q) {
     var out = blankQ();
     if (Array.isArray(q)) out.forEach(function (o, i) { if (q[i] && typeof q[i] === 'object') Object.keys(o).forEach(function (k) { o[k] = Math.max(0, Number(q[i][k]) || 0); }); });
@@ -376,16 +380,20 @@ nav button{padding:0 4px}
   }
   function qAny(q) { return Array.isArray(q) && q.some(function (o) { return o && Object.keys(blank()).some(function (k) { return Number(o[k]) > 0; }); }); }
   function clock(sec) { sec = Math.max(0, Math.floor(sec)); return pad(Math.floor(sec / 60)) + ':' + pad(sec % 60); }
-  // Laufendes Spiel: gewähltes Viertel (q), Werte je Viertel (gq), Einsatzzeit in Sekunden (sec), Zeitpunkt der Einwechslung (on), Starting 5 (st)
+  // Laufendes Spiel: gewähltes Quarter (q, 4 = Overtime), Werte je Quarter (gq), Einsatzzeit gesamt (sec) und je Quarter (qs) in Sekunden,
+  // Zeitpunkt, seit dem die Uhr läuft (on), Starting 5 (st)
+  function run() { return S.on ? Math.max(0, (Date.now() - S.on) / 1000) : 0; }
+  function curQs(i) { return S.qs[i] + (i === S.q ? run() : 0); }
+  function flushT() { if (!S.on) return; var d = run(); S.sec += d; S.qs[S.q] += d; S.on = Date.now(); }
   function curSec() { return S.sec + (S.on ? Math.max(0, (Date.now() - S.on) / 1000) : 0); }
-  function extra() { return { q: S.q, gq: S.gq, sec: S.sec, on: S.on, st: S.st }; }
+  function extra() { return { q: S.q, gq: S.gq, sec: S.sec, qs: S.qs, on: S.on, st: S.st }; }
   function loadExtra(d) {
     d = d || {};
-    S.q = Math.max(0, Math.min(3, Number(d.q) || 0)); S.gq = normQ(d.gq);
+    S.q = Math.max(0, Math.min(4, Number(d.q) || 0)); S.gq = normQ(d.gq); S.qs = normQs(d.qs);
     S.sec = Math.max(0, Number(d.sec) || 0); S.on = Number(d.on) || null; S.st = !!d.st;
   }
   function hasGame() { return total(S.game) > 0 || S.sec >= 1 || !!S.on || S.st; }
-  var S = { q:0, gq:blankQ(), sec:0, on:null, st:false, snf:null, tmf:null, team:'', tfilter:'comp', type:'season', filter:'all', name:'', number:'', opp:'', date:'', venue:'home', editId:null, draft:null, tab:'game', game: blank(), undo:[], history:[] };
+  var S = { q:0, gq:blankQ(), sec:0, qs:[0, 0, 0, 0, 0], on:null, st:false, snf:null, tmf:null, team:'', tfilter:'comp', type:'season', filter:'all', name:'', number:'', opp:'', date:'', venue:'home', editId:null, draft:null, tab:'game', game: blank(), undo:[], history:[] };
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function today() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function normDate(x) { var m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(x || ''); return m ? m[3] + '-' + m[2] + '-' + m[1] : (x || today()); }
@@ -456,7 +464,7 @@ nav button{padding:0 4px}
     fetch('api/player/' + gone, { method:'DELETE' }).then(function (r) { setSync(r.ok ? 'Gespeichert' : 'Löschen nicht gespeichert'); })
       .catch(function () { setSync('Offline – Löschen nicht gespeichert'); });
   }
-  function cur() { return { id:P.pid, q:S.q, gq:S.gq, sec:S.sec, on:S.on, st:S.st, team:S.team, name:S.name, number:S.number, opp:S.opp, date:S.date, venue:S.venue, type:S.type, editId:S.editId, draft:S.draft, game:S.game, history:S.history }; }
+  function cur() { return { id:P.pid, q:S.q, gq:S.gq, sec:S.sec, qs:S.qs, on:S.on, st:S.st, team:S.team, name:S.name, number:S.number, opp:S.opp, date:S.date, venue:S.venue, type:S.type, editId:S.editId, draft:S.draft, game:S.game, history:S.history }; }
   function loadPlayer(d) {
     barSel = {};
     S.team = tname(d); loadExtra(d);
@@ -588,16 +596,16 @@ nav button{padding:0 4px}
     };
     if (!can(g)) return;
     keys.forEach(function (k) { g[k] -= 1; });
-    // im gewählten Viertel abziehen, sonst im letzten Viertel, das den Wert enthält
+    // im gewählten Quarter abziehen, sonst im letzten Quarter, das den Wert enthält
     var qi = can(S.gq[S.q]) ? S.q : -1;
-    for (var j = 3; j >= 0 && qi < 0; j--) if (can(S.gq[j])) qi = j;
+    for (var j = QN.length - 1; j >= 0 && qi < 0; j--) if (can(S.gq[j])) qi = j;
     if (qi >= 0) keys.forEach(function (k) { S.gq[qi][k] -= 1; });
     for (var i = S.undo.length - 1; i >= 0; i--) {
       if (S.undo[i].join() === keys.join()) { S.undo.splice(i, 1); break; }
     }
     persist(); render();
   }
-  function clearGame() { S.game = blank(); S.gq = blankQ(); S.q = 0; S.sec = 0; S.on = null; S.st = false; S.undo = []; }
+  function clearGame() { S.game = blank(); S.gq = blankQ(); S.q = 0; S.sec = 0; S.qs = normQs(); S.on = null; S.st = false; S.undo = []; }
   var armed = false, armTimer = null;
   function reset() {
     if (!hasGame()) return;
@@ -616,15 +624,17 @@ nav button{padding:0 4px}
     persist(); render();
   }
   function toggleTime() {
-    if (S.on) { S.sec = curSec(); S.on = null; } else { S.on = Date.now(); }
+    if (S.on) { flushT(); S.on = null; } else { S.on = Date.now(); }
     persist(); render();
   }
   function save() {
     if (S.editId === null && !hasGame()) return;
+    flushT();
     var rec = Object.assign({}, S.game, { id: S.editId !== null ? S.editId : Date.now(), date: S.date || today(), venue: S.venue, type: S.type, team: S.team.trim(), opp: S.opp.trim(),
       sn: S.editId !== null ? gsn(S.history.filter(function (x) { return x.id === S.editId; })[0]) : curSn(),
       sec: Math.round(curSec()), st: S.st });
     if (qAny(S.gq)) rec.q = S.gq;
+    if (S.qs.some(function (v) { return v >= 1; })) rec.qs = S.qs.map(Math.round);
     if (S.editId !== null) {
       var found = false;
       S.history = S.history.map(function (x) { if (x.id === S.editId) { found = true; return rec; } return x; });
@@ -650,7 +660,7 @@ nav button{padding:0 4px}
     if (S.editId === null) S.draft = Object.assign({ game: S.game, opp: S.opp, date: S.date, venue: S.venue, type: S.type, team: S.team }, extra());
     S.editId = id; S.undo = [];
     S.game = Object.assign(blank(), r); delete S.game.id; delete S.game.date; delete S.game.venue; delete S.game.opp; delete S.game.type; delete S.game.team; delete S.game.sn; delete S.game.q; delete S.game.sec; delete S.game.st;
-    S.q = 0; S.gq = normQ(r.q); S.sec = Math.max(0, Number(r.sec) || 0); S.on = null; S.st = !!r.st;
+    S.q = 0; S.gq = normQ(r.q); S.sec = Math.max(0, Number(r.sec) || 0); S.qs = normQs(r.qs); S.on = null; S.st = !!r.st;
     S.opp = r.opp || ''; S.date = r.date; S.venue = r.venue || 'home'; S.type = gtype(r); S.team = tname(r); $('team').value = S.team;
     $('opp').value = S.opp; $('gdate').value = S.date;
     S.tab = 'game'; persist(); render();
@@ -674,7 +684,7 @@ nav button{padding:0 4px}
     var dec = function (v) { return String(Math.round(v * 10) / 10).replace('.', ','); };
     var pc = function (m, a) { return a ? dec(m / a * 100) : ''; };
     var q = function (v) { v = String(v); return /[;"\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
-    var head = ['Datum','Saison','Mannschaft','Heim/Auswärts','Art','Gegner','Punkte','FW Treffer','FW Versuche','FW %','2er Treffer','2er Versuche','2er %','3er Treffer','3er Versuche','3er %','Wurf Treffer','Wurf Versuche','Wurf %','Off. Rebounds','Def. Rebounds','Rebounds','Assists','Steals','Blocks','Ballverluste','Fouls','Minuten','Starting 5','Punkte 1. Viertel','Punkte 2. Viertel','Punkte 3. Viertel','Punkte 4. Viertel'];
+    var head = ['Datum','Saison','Mannschaft','Heim/Auswärts','Art','Gegner','Punkte','FW Treffer','FW Versuche','FW %','2er Treffer','2er Versuche','2er %','3er Treffer','3er Versuche','3er %','Wurf Treffer','Wurf Versuche','Wurf %','Off. Rebounds','Def. Rebounds','Rebounds','Assists','Steals','Blocks','Ballverluste','Fouls','Minuten','Starting 5','Punkte Q1','Punkte Q2','Punkte Q3','Punkte Q4','Punkte OT','Minuten Q1','Minuten Q2','Minuten Q3','Minuten Q4','Minuten OT'];
     var cols = function (x, label, date, venue, opp, art, sais) {
       return [date, sais || '', label || '', venue, art || '', opp, pts(x), x.ftm, x.fta, pc(x.ftm, x.fta), x.p2m, x.p2a, pc(x.p2m, x.p2a), x.p3m, x.p3a, pc(x.p3m, x.p3a),
         x.p2m + x.p3m, x.p2a + x.p3a, pc(x.p2m + x.p3m, x.p2a + x.p3a), x.oreb, x.dreb, x.oreb + x.dreb, x.ast, x.stl, x.blk, x.tov, x.pf];
@@ -682,7 +692,8 @@ nav button{padding:0 4px}
     var rows = [head];
     list.forEach(function (x) {
       rows.push(cols(x, tname(x), fmtDate(x.date), x.venue === 'home' ? 'Heim' : x.venue === 'away' ? 'Auswärts' : '', x.opp || '', TYPES[gtype(x)], M.seasons[gsn(x)])
-        .concat([x.sec ? dec(x.sec / 60) : '', x.st ? 'Ja' : 'Nein'], Array.isArray(x.q) ? normQ(x.q).map(pts) : ['', '', '', '']));
+        .concat([x.sec ? dec(x.sec / 60) : '', x.st ? 'Ja' : 'Nein'], Array.isArray(x.q) ? normQ(x.q).map(pts) : ['', '', '', '', ''],
+          Array.isArray(x.qs) ? normQs(x.qs).map(function (t) { return dec(t / 60); }) : ['', '', '', '', '']));
     });
     var tot = blank(); list.forEach(function (x) { Object.keys(tot).forEach(function (k) { tot[k] += x[k]; }); });
     rows.push([]);
@@ -723,6 +734,7 @@ nav button{padding:0 4px}
     var r = blank(); Object.keys(r).forEach(function (k) { r[k] = num(x[k]); });
     r.id = id; r.date = normDate(x.date); r.venue = x.venue === 'away' ? 'away' : (x.venue === 'home' ? 'home' : ''); r.opp = String(x.opp || '').trim(); r.type = gtype(x); r.team = tname(x); r.sn = Math.max(0, Number(x.sn) || 0);
     r.sec = Math.max(0, Math.round(Number(x.sec) || 0)); r.st = !!x.st; if (qAny(x.q)) r.q = normQ(x.q);
+    if (Array.isArray(x.qs) && x.qs.some(function (v) { return Number(v) > 0; })) r.qs = normQs(x.qs).map(Math.round);
     return r;
   }
   function sig(r) { return [r.date, Number(r.sn) || 0, r.venue, gtype(r), tname(r), r.opp].concat(Object.keys(blank()).map(function (k) { return r[k]; })).join('|'); }
@@ -1010,14 +1022,15 @@ nav button{padding:0 4px}
     $('reset').disabled = !hasGame();
     $('qSeg').innerHTML = S.gq.map(function (o, i) {
       var on = S.q === i;
-      return '<button type="button" data-act="q" data-v="' + i + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '" aria-label="' + (i + 1) + '. Viertel, ' + pts(o) + ' Punkte">' + (i + 1) + '. V<small>' + pts(o) + ' Pkt</small></button>';
+      return '<button type="button" data-act="q" data-v="' + i + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '" aria-label="' + (i === 4 ? 'Overtime' : 'Quarter ' + (i + 1)) + ', ' + pts(o) + ' Punkte">' + QN[i] + '<small>' + pts(o) + '</small></button>';
     }).join('');
     $('tBtn').className = 'tbtn' + (S.on ? ' on' : '');
-    $('tBtn').innerHTML = '<span id="tClock">' + clock(curSec()) + '</span><small>' + (S.on ? 'auf dem Feld' : 'einwechseln') + '</small>';
+    $('tBtn').innerHTML = '<span id="tClock">' + clock(curSec()) + '</span><small>' + QN[S.q] + ' <span id="tQ">' + clock(curQs(S.q)) + '</span>' + (S.on ? '' : curSec() >= 1 ? ' · Bank' : ' · Start') + '</small>';
+    $('qTimes').textContent = 'Zeit je Quarter: ' + QN.map(function (nm, i) { return nm + ' ' + clock(curQs(i)); }).join(' · ');
     $('tBtn').setAttribute('aria-pressed', !!S.on);
     $('tBtn').setAttribute('aria-label', 'Einsatzzeit ' + clock(curSec()) + (S.on ? ', läuft – antippen zum Auswechseln' : ', steht – antippen zum Einwechseln'));
     $('stBtn').className = 'tbtn' + (S.st ? ' on' : '');
-    $('stBtn').innerHTML = '<span>' + (S.st ? '✓ ' : '') + 'Starting 5</span><small>' + (S.st ? 'ja' : 'nein') + '</small>';
+    $('stBtn').innerHTML = '<span>' + (S.st ? '✓ ' : '') + 'Start 5</span><small>' + (S.st ? 'ja' : 'nein') + '</small>';
     $('stBtn').setAttribute('aria-pressed', S.st);
     if (document.activeElement !== $('mins')) $('mins').value = curSec() >= 1 ? String(Math.round(curSec() / 6) / 10).replace('.', ',') : '';
     $('reset').className = 'reset' + (armed ? ' arm' : '');
@@ -1111,12 +1124,18 @@ nav button{padding:0 4px}
     var qg = h.filter(function (x) { return Array.isArray(x.q); }).map(function (x) { return normQ(x.q); });
     $('qSec').classList.toggle('hidden', !qg.length);
     if (qg.length) {
-      $('qTable').innerHTML = '<thead><tr><th>Viertel</th><th>Punkte</th><th>Wurf</th><th>Reb.</th><th>Ast.</th></tr></thead><tbody>' + [0, 1, 2, 3].map(function (i) {
+      var withT = h.filter(function (x) { return Array.isArray(x.q) && Array.isArray(x.qs); });
+      var rowsQ = QN.map(function (nm, i) {
         var t = blank(); qg.forEach(function (q) { Object.keys(t).forEach(function (k) { t[k] += q[i][k]; }); });
-        var per = function (v) { return f1(v / qg.length); };
-        return '<tr><td>' + (i + 1) + '. Viertel</td><td>' + per(pts(t)) + '</td><td>' + pct(t.p2m + t.p3m, t.p2a + t.p3a) + '</td><td>' + per(t.oreb + t.dreb) + '</td><td>' + per(t.ast) + '</td></tr>';
+        var sec = withT.reduce(function (a, x) { return a + (Number(x.qs[i]) || 0); }, 0);
+        return { nm: nm, t: t, sec: sec, any: total(t) > 0 || sec > 0 };
+      }).filter(function (r, i) { return i < 4 || r.any; });                       // Overtime nur zeigen, wenn es eine gab
+      var per = function (v) { return f1(v / qg.length); };
+      $('qTable').innerHTML = '<thead><tr><th>Quarter</th><th>Punkte</th><th>Wurf</th><th>Reb.</th><th>Ast.</th><th>Min.</th></tr></thead><tbody>' + rowsQ.map(function (r) {
+        var t = r.t;
+        return '<tr><td>' + r.nm + '</td><td>' + per(pts(t)) + '</td><td>' + pct(t.p2m + t.p3m, t.p2a + t.p3a) + '</td><td>' + per(t.oreb + t.dreb) + '</td><td>' + per(t.ast) + '</td><td>' + (withT.length ? f1(r.sec / 60 / withT.length) : '–') + '</td></tr>';
       }).join('') + '</tbody>';
-      $('qNote').textContent = 'Schnitt pro Spiel aus ' + qg.length + (qg.length === 1 ? ' Spiel' : ' Spielen') + ' mit Viertel-Erfassung' + (qg.length < n ? ' (von ' + n + ')' : '') + '.';
+      $('qNote').textContent = 'Schnitt pro Spiel aus ' + qg.length + (qg.length === 1 ? ' Spiel' : ' Spielen') + ' mit Quarter-Erfassung' + (qg.length < n ? ' (von ' + n + ')' : '') + '.';
     }
     $('pctTiles').innerHTML = tiles([
       ['Wurf', pct(sum(fgm), sum(fga))], ['Dreier', pct(sum(function (x) { return x.p3m; }), sum(function (x) { return x.p3a; }))],
@@ -1132,7 +1151,7 @@ nav button{padding:0 4px}
         '<span>Wurf ' + fgm(x) + '/' + fga(x) + ' · 3er ' + x.p3m + '/' + x.p3a + ' · FW ' + x.ftm + '/' + x.fta + '</span>' +
         (function () {
           var e = [];
-          if (Array.isArray(x.q)) e.push('Viertel ' + normQ(x.q).map(pts).join(' · '));
+          if (Array.isArray(x.q)) { var qp = normQ(x.q).map(pts); e.push('Quarter ' + qp.slice(0, 4).join(' · ') + (total(normQ(x.q)[4]) ? ' · OT ' + qp[4] : '')); }
           if (x.sec > 0) e.push(clock(x.sec) + ' Min');
           if (x.st) e.push('Starting 5');
           return e.length ? '<span>' + e.join(' · ') + '</span>' : '';
@@ -1157,7 +1176,7 @@ nav button{padding:0 4px}
     else if (a === 'cancel') cancelEdit();
     else if (a === 'team') { S.team = b.getAttribute('data-v'); $('team').value = S.team; persist(); render(); }
     else if (a === 'tmf') { var e2 = TF[Number(b.getAttribute('data-i'))]; S.tmf = e2 ? e2[0] : null; render(); }
-    else if (a === 'q') { S.q = Number(b.getAttribute('data-v')) || 0; persist(); render(); }
+    else if (a === 'q') { flushT(); S.q = Number(b.getAttribute('data-v')) || 0; persist(); render(); }
     else if (a === 'time') toggleTime();
     else if (a === 'st') { S.st = !S.st; persist(); render(); }
     else if (a === 'cmpp') { var ci = Number(b.getAttribute('data-id')); if (cmpOff[ci]) delete cmpOff[ci]; else cmpOff[ci] = true; render(); }
@@ -1196,10 +1215,13 @@ nav button{padding:0 4px}
   $('mins').addEventListener('input', function (e) {
     var v = Number(String(e.target.value).replace(',', '.'));
     if (!isFinite(v) || v < 0) return;
-    S.sec = Math.round(v * 60); if (S.on) S.on = Date.now();
+    flushT();
+    var old = S.sec, neu = Math.round(v * 60);
+    if (old > 0) S.qs = S.qs.map(function (t) { return t * neu / old; });   // Verteilung auf die Quarter beibehalten
+    S.sec = neu;
     persist(); render();
   });
-  setInterval(function () { if (S.on && S.tab === 'game') { var t = $('tClock'); if (t) t.textContent = clock(curSec()); } }, 1000);
+  setInterval(function () { if (S.on && S.tab === 'game') { var t = $('tClock'), u = $('tQ'); if (t) t.textContent = clock(curSec()); if (u) u.textContent = clock(curQs(S.q)); } }, 1000);
   $('snNew').addEventListener('input', function (e) { snDraft = e.target.value; });
   $('team').addEventListener('input', function (e) { S.team = e.target.value; persist(); render(); });
   $('opp').addEventListener('input', function (e) { S.opp = e.target.value; persist(); });
