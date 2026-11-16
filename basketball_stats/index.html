@@ -91,6 +91,24 @@ section{display:flex;flex-direction:column;gap:12px}
 .banner{background:rgba(233,180,76,.12);border:1px solid var(--gold);border-radius:16px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:600;color:var(--tx)}
 .banner button{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-size:14px;font-weight:700;flex:none}
 .acts{display:flex;flex-direction:column;gap:8px;flex:none}
+.pick{display:flex;flex-wrap:wrap;gap:8px}
+.pick button{min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--line2);background:transparent;color:var(--mu);font-size:14px;font-weight:600}
+.pick button.on{background:var(--act);border-color:var(--act);color:var(--gold)}
+.chart{padding:14px;display:flex;flex-direction:column;gap:10px}
+.chart .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.chart .top b{font:400 28px/1 'Instrument Serif',Georgia,serif}
+.chart .top span{font-size:15px;font-weight:600;color:var(--mu);white-space:nowrap}
+.chart svg{display:block;width:100%;height:auto;touch-action:pan-y}
+.chart .bar{fill:var(--gold);opacity:.55}
+.chart .bar.on{opacity:1}
+.chart .none{fill:var(--mu);opacity:.6}
+.chart .none.on{opacity:1;fill:var(--tx)}
+.chart .hit{fill:transparent;cursor:pointer}
+.chart .grid{stroke:var(--line2);stroke-width:1}
+.chart .avg{stroke:var(--tx);stroke-width:1.5;stroke-dasharray:4 4;opacity:.75}
+.chart text{fill:var(--mu);font:600 10px 'Public Sans',system-ui,sans-serif}
+.chart .read{margin:0;font-size:13px;color:var(--mu);min-height:18px}
+.chart .read strong{color:var(--tx);font-size:15px}
 .hidden{display:none!important}
 </style>
 </head>
@@ -163,6 +181,10 @@ section{display:flex;flex-direction:column;gap:12px}
 
     <section aria-label="Schnitt pro Spiel"><h3>Schnitt pro Spiel</h3><div class="grid3" id="avgTiles"></div></section>
     <section aria-label="Trefferquoten"><h3>Trefferquoten</h3><div class="grid3" id="pctTiles"></div></section>
+    <section aria-label="Saisonverlauf"><h3>Verlauf</h3>
+      <div class="pick" id="chartPick" role="group" aria-label="Statistiken für den Verlauf auswählen"></div>
+      <div id="charts" style="display:flex;flex-direction:column;gap:12px"></div>
+    </section>
     <section aria-label="Alle Spiele"><h3>Alle Spiele</h3><div id="games" style="display:flex;flex-direction:column;gap:12px"></div></section>
   </div>
 </main>
@@ -390,6 +412,106 @@ section{display:flex;flex-direction:column;gap:12px}
     msg.textContent = added + (added === 1 ? ' Spiel importiert' : ' Spiele importiert') + (dup ? ', ' + dup + ' bereits vorhanden (übersprungen).' : '.');
   }
 
+  // ---- Saisonverlauf: je ausgewählter Statistik ein Balkendiagramm (ein Balken pro Spiel) ----
+  var CKEY = 'hoopslog-charts-v1';
+  var cnt1 = function (k) { return function (x) { return x[k]; }; };
+  // [Schlüssel, Titel, Kurzname, Wert bzw. Treffer, Versuche (nur bei Quoten)]
+  var CHARTS = [
+    ['pts', 'Punkte', 'Punkte', pts],
+    ['fg', 'Wurfquote', 'Wurf %', function (x) { return x.p2m + x.p3m; }, function (x) { return x.p2a + x.p3a; }],
+    ['p2', 'Zweierquote', '2er %', cnt1('p2m'), cnt1('p2a')],
+    ['p3', 'Dreierquote', '3er %', cnt1('p3m'), cnt1('p3a')],
+    ['ft', 'Freiwurfquote', 'FW %', cnt1('ftm'), cnt1('fta')],
+    ['reb', 'Rebounds', 'Rebounds', function (x) { return x.oreb + x.dreb; }],
+    ['oreb', 'Offensiv-Rebounds', 'Off. Reb.', cnt1('oreb')],
+    ['dreb', 'Defensiv-Rebounds', 'Def. Reb.', cnt1('dreb')],
+    ['ast', 'Assists', 'Assists', cnt1('ast')],
+    ['stl', 'Steals', 'Steals', cnt1('stl')],
+    ['blk', 'Blocks', 'Blocks', cnt1('blk')],
+    ['tov', 'Ballverluste', 'Ballverluste', cnt1('tov')],
+    ['pf', 'Fouls', 'Fouls', cnt1('pf')]
+  ];
+  var chartSel = ['pts', 'fg', 'reb'], barSel = {};
+  try {
+    var cs = JSON.parse(localStorage.getItem(CKEY));
+    if (Array.isArray(cs)) chartSel = cs.filter(function (k) { return CHARTS.some(function (c) { return c[0] === k; }); });
+  } catch (e) {}
+  function toggleChart(k) {
+    var i = chartSel.indexOf(k);
+    if (i >= 0) chartSel.splice(i, 1); else chartSel.push(k);
+    try { localStorage.setItem(CKEY, JSON.stringify(chartSel)); } catch (e) {}
+    render();
+  }
+  function niceMax(v) {
+    if (v <= 4) return 4;
+    var steps = [5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 60, 80, 100];
+    for (var i = 0; i < steps.length; i++) if (v <= steps[i]) return steps[i];
+    return Math.ceil(v / 50) * 50;
+  }
+  function chartCard(c, list) {
+    var isPct = !!c[4], n = list.length;
+    var vals = list.map(function (x) { if (!isPct) return c[3](x); var a = c[4](x); return a ? c[3](x) / a * 100 : null; });
+    var mean, meanTxt, max;
+    if (isPct) {
+      var sm = 0, sa = 0; list.forEach(function (x) { sm += c[3](x); sa += c[4](x); });
+      mean = sa ? sm / sa * 100 : null; meanTxt = mean === null ? '–' : Math.round(mean) + ' %'; max = 100;
+    } else {
+      mean = vals.reduce(function (a, v) { return a + v; }, 0) / n; meanTxt = f1(mean);
+      max = niceMax(Math.max.apply(null, vals));
+    }
+    var L = 4, R = 316, T = 16, B = 108, slot = (R - L) / n, bw = Math.max(1.5, Math.min(26, slot - 2));
+    var sel = 0; list.forEach(function (x, i) { if (x.id === barSel[c[0]]) sel = i; });
+    if (barSel[c[0]] === undefined || !list.some(function (x) { return x.id === barSel[c[0]]; })) sel = n - 1;
+    var fmt = function (v) { return v === null ? 'kein Versuch' : isPct ? Math.round(v) + ' %' : String(v); };
+    var info = function (x) {
+      var v = x.venue === 'away' ? 'Auswärts' : (x.venue === 'home' ? 'Heim' : '');
+      var t = fmtDate(x.date) + (v ? ' · ' + v : '') + (x.opp ? ' · gegen ' + x.opp : '');
+      if (isPct && c[4](x)) t += ' · ' + c[3](x) + '/' + c[4](x);
+      return t;
+    };
+    var marks = '', hits = '';
+    list.forEach(function (x, i) {
+      var v = vals[i], x0 = L + i * slot + (slot - bw) / 2, on = i === sel ? ' on' : '';
+      if (v === null || v === 0) {
+        marks += '<rect class="none' + on + '" data-i="' + i + '" x="' + x0.toFixed(2) + '" y="' + (B - 2) + '" width="' + bw.toFixed(2) + '" height="2"/>';
+      } else {
+        var hgt = Math.max(2, v / max * (B - T)), r = Math.min(4, bw / 2, hgt), y = B - hgt, x1 = x0 + bw;
+        marks += '<path class="bar' + on + '" data-i="' + i + '" d="M' + x0.toFixed(2) + ' ' + B + 'V' + (y + r).toFixed(2) + 'Q' + x0.toFixed(2) + ' ' + y.toFixed(2) + ' ' + (x0 + r).toFixed(2) + ' ' + y.toFixed(2) +
+          'H' + (x1 - r).toFixed(2) + 'Q' + x1.toFixed(2) + ' ' + y.toFixed(2) + ' ' + x1.toFixed(2) + ' ' + (y + r).toFixed(2) + 'V' + B + 'Z"/>';
+      }
+      hits += '<rect class="hit" data-act="bar" data-c="' + c[0] + '" data-i="' + i + '" data-id="' + x.id + '" data-v="' + esc(fmt(v)) + '" data-t="' + esc(info(x)) + '" x="' + (L + i * slot).toFixed(2) + '" y="0" width="' + slot.toFixed(2) + '" height="' + B + '"/>';
+    });
+    var avgLine = mean === null ? '' : '<line class="avg" x1="' + L + '" x2="' + R + '" y1="' + (B - mean / max * (B - T)).toFixed(2) + '" y2="' + (B - mean / max * (B - T)).toFixed(2) + '"/>';
+    var first = fmtDate(list[0].date).slice(0, 6), last = fmtDate(list[n - 1].date).slice(0, 6);
+    var xl = n === 1 ? '<text x="160" y="124" text-anchor="middle">' + first + '</text>'
+      : '<text x="' + L + '" y="124">' + first + '</text><text x="' + R + '" y="124" text-anchor="end">' + last + '</text>';
+    var label = c[1] + ' im Saisonverlauf, ' + n + (n === 1 ? ' Spiel' : ' Spiele') + ', Schnitt ' + meanTxt;
+    return '<div class="card chart" data-chart="' + c[0] + '"><div class="top"><b>' + c[1] + '</b><span>Ø ' + meanTxt + '</span></div>' +
+      '<svg viewBox="0 0 320 128" role="img" aria-label="' + esc(label) + '">' +
+      '<line class="grid" x1="' + L + '" x2="' + R + '" y1="' + T + '" y2="' + T + '"/><line class="grid" x1="' + L + '" x2="' + R + '" y1="' + B + '" y2="' + B + '"/>' +
+      '<text x="' + L + '" y="11">' + max + (isPct ? ' %' : '') + '</text>' + marks + avgLine + xl + hits + '</svg>' +
+      '<p class="read"><strong>' + esc(fmt(vals[sel])) + '</strong> · <span>' + esc(info(list[sel])) + '</span></p></div>';
+  }
+  function renderCharts(h) {
+    $('chartPick').innerHTML = CHARTS.map(function (c) {
+      var on = chartSel.indexOf(c[0]) >= 0;
+      return '<button type="button" data-act="chart" data-k="' + c[0] + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '">' + c[2] + '</button>';
+    }).join('');
+    if (!h.length) { $('charts').innerHTML = ''; return; }
+    var list = h.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.id - b.id; });
+    var shown = CHARTS.filter(function (c) { return chartSel.indexOf(c[0]) >= 0; });
+    $('charts').innerHTML = shown.length ? shown.map(function (c) { return chartCard(c, list); }).join('')
+      : '<div class="card empty">Wähle oben eine oder mehrere Statistiken aus, um den Verlauf zu sehen.</div>';
+  }
+  function showBar(b) {
+    var card = b.closest('.chart'); if (!card) return;
+    var i = b.getAttribute('data-i');
+    barSel[b.getAttribute('data-c')] = Number(b.getAttribute('data-id'));
+    Array.prototype.forEach.call(card.querySelectorAll('.bar,.none'), function (m) { m.classList.toggle('on', m.getAttribute('data-i') === i); });
+    card.querySelector('.read strong').textContent = b.getAttribute('data-v');
+    card.querySelector('.read span').textContent = b.getAttribute('data-t');
+  }
+
   function render() {
     var g = S.game, h = S.history, n = h.length;
     $('pts').textContent = pts(g);
@@ -468,6 +590,7 @@ section{display:flex;flex-direction:column;gap:12px}
       ['Wurf', pct(sum(fgm), sum(fga))], ['Dreier', pct(sum(function (x) { return x.p3m; }), sum(function (x) { return x.p3a; }))],
       ['Freiwurf', pct(sum(function (x) { return x.ftm; }), sum(function (x) { return x.fta; }))]
     ], 'dark');
+    renderCharts(h);
     $('games').innerHTML = h.map(function (x) {
       var v = x.venue === 'away' ? 'Auswärts' : (x.venue === 'home' ? 'Heim' : '');
       var title = (v ? v + ' · ' : '') + (x.opp ? 'gegen ' + esc(x.opp) : 'Spiel');
@@ -495,11 +618,16 @@ section{display:flex;flex-direction:column;gap:12px}
     else if (a === 'reset') reset();
     else if (a === 'undo') undo();
     else if (a === 'save') save();
+    else if (a === 'chart') toggleChart(b.getAttribute('data-k'));
+    else if (a === 'bar') showBar(b);
     else if (a === 'tab') { S.tab = b.getAttribute('data-v'); render(); }
     else if (a === 'del') {
       var id = Number(b.getAttribute('data-id'));
       S.history = S.history.filter(function (x) { return x.id !== id; }); persist(); render();
     }
+  });
+  document.addEventListener('pointerover', function (e) {
+    var b = e.target.closest && e.target.closest('[data-act="bar"]'); if (b) showBar(b);
   });
   $('pname').addEventListener('input', function (e) { S.name = e.target.value; persist(); render(); });
   $('pnum').addEventListener('input', function (e) { S.number = e.target.value; persist(); render(); });

@@ -32,6 +32,11 @@ Reiter **Saison**:
 
 - **Schnitt pro Spiel** und **Trefferquoten** über alle gespeicherten Spiele.
 - Filter **Alle / Heim / Auswärts**.
+- **Verlauf**: Diagramme über die Saison, ein Balken pro Spiel in zeitlicher Reihenfolge.
+  - Über die Auswahl-Schaltflächen legst du fest, welche Statistiken angezeigt werden: Punkte, Wurf-, Zweier-, Dreier- und Freiwurfquote, Rebounds (gesamt, offensiv, defensiv), Assists, Steals, Blocks, Ballverluste und Fouls. Jede gewählte Statistik bekommt ein eigenes Diagramm.
+  - Die gestrichelte Linie ist der Durchschnitt, der Wert steht oben rechts (Ø).
+  - Einen Balken antippen (am Rechner: mit der Maus darüberfahren) zeigt Wert, Datum und Gegner dieses Spiels, bei Quoten zusätzlich Treffer/Versuche.
+  - Der Filter Alle / Heim / Auswärts gilt auch für die Diagramme. Die Auswahl der Statistiken merkt sich das jeweilige Gerät.
 - **Alle Spiele** als Liste: mit dem Stift ein Spiel nachträglich bearbeiten, mit dem Papierkorb löschen.
 
 ## Export und Import
