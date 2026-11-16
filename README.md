@@ -8,8 +8,8 @@ Eine App für Home Assistant (früher „Add-on“), mit der du die Statistiken 
 - Mehrere Erfasser gleichzeitig: jedes Gerät erfasst einen anderen Spieler, die Geräte gleichen sich laufend ab
 - Würfe erfassen (Freiwurf, 2er, 3er – Treffer und Fehlwürfe), dazu Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls
 - Punkte und Trefferquoten automatisch berechnen
-- Jedes Spiel mit Datum, Gegner, Heim/Auswärts und Art (Saison, Playoffs, Testspiel) speichern
-- Auswertung: Schnitt pro Spiel und Trefferquoten, getrennt nach Saison, Playoffs und Testspielen sowie Heim und Auswärts
+- Jedes Spiel mit Datum, Mannschaft, Gegner, Heim/Auswärts und Art (Saison, Playoffs, Testspiel) speichern
+- Auswertung: Schnitt pro Spiel und Trefferquoten, getrennt nach Mannschaft, nach Saison, Playoffs und Testspielen sowie Heim und Auswärts
 - Verlaufsdiagramme – die angezeigten Statistiken sind frei wählbar
 - Export als CSV (für Excel/Numbers) und als JSON-Sicherung, Import beider Formate
 - Nur über Home Assistant erreichbar – kein offener Port, Daten im Home-Assistant-Backup

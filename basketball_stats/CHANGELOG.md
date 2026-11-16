@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.6.0 – 2026-11-16
+
+- Neu: Mannschaft pro Spiel – für Spieler, die in mehreren Mannschaften spielen
+- Auswertung je Mannschaft oder über alle Mannschaften; gilt für Schnitte, Quoten, Diagramme, Spielliste und CSV-Export
+- CSV-Export und -Import um die Spalte „Mannschaft“ erweitert; bereits gespeicherte Spiele bleiben ohne Mannschaft und lassen sich über Bearbeiten zuordnen
+
 ## 1.5.1 – 2026-11-16
 
 - Behoben: Das Datumsfeld ragte auf dem iPhone bei aufgeklappten Spieldaten über den Rahmen hinaus und war niedriger als die anderen Felder

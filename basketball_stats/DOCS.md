@@ -40,12 +40,13 @@ Unterwegs erreichst du die Seite auf demselben Weg wie Home Assistant selbst, zu
 Reiter **Spiel erfassen**. Die Ansicht ist so gebaut, dass alle Schaltflächen ohne Scrollen auf einen Handy-Bildschirm passen.
 
 1. Die Zeile **Spieldaten** aufklappen, **Gegner** und **Datum** eintragen, **Heimspiel** oder **Auswärts** wählen. Zugeklappt zeigt die Zeile die Angaben als Zusammenfassung.
-2. Die Art des Spiels wählen: **Saison**, **Playoffs** oder **Testspiel**. Die Auswahl bleibt für das nächste Spiel stehen.
-3. Während des Spiels mittippen:
+2. Spielt der Spieler in mehreren Mannschaften: unter **Mannschaft** den Namen eintragen (z. B. „U14“) oder eine bereits verwendete Mannschaft antippen. Die Auswahl bleibt für das nächste Spiel stehen.
+3. Die Art des Spiels wählen: **Saison**, **Playoffs** oder **Testspiel**. Die Auswahl bleibt für das nächste Spiel stehen.
+4. Während des Spiels mittippen:
    - **Würfe** (Freiwurf, 2er, 3er): **Treffer** oder **Fehlwurf** antippen. Punkte und Quoten rechnet die Seite selbst aus.
    - **Spielzüge**: Offensiv- und Defensiv-Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls durch Antippen der Kachel hochzählen.
-4. Vertippt? **Rückgängig** nimmt die letzte Eingabe zurück; mit **−** lässt sich jeder Wert einzeln korrigieren.
-5. Nach dem Spiel **Spiel speichern**. Das Spiel wandert in die Auswertung, die Eingabe ist wieder leer.
+5. Vertippt? **Rückgängig** nimmt die letzte Eingabe zurück; mit **−** lässt sich jeder Wert einzeln korrigieren.
+6. Nach dem Spiel **Spiel speichern**. Das Spiel wandert in die Auswertung, die Eingabe ist wieder leer.
 
 **Leeren** verwirft die laufende Eingabe. Zur Sicherheit muss die Schaltfläche zweimal angetippt werden.
 
@@ -55,7 +56,8 @@ Oben rechts steht der Speicherstatus: **Gespeichert** heißt, die Daten liegen i
 
 Reiter **Auswertung**:
 
-- Auswahl der Spielart – sie gilt für alle Zahlen, Diagramme, die Spielliste und den CSV-Export:
+- Auswahl der Mannschaft (erscheint, sobald ein Spiel einer Mannschaft zugeordnet ist): **Alle Mannschaften**, jede einzelne Mannschaft oder **Ohne Mannschaft** für Spiele ohne Zuordnung. Ältere Spiele ordnest du über den Stift in der Spielliste nachträglich zu.
+- Auswahl der Spielart – sie gilt zusammen mit der Mannschaft für alle Zahlen, Diagramme, die Spielliste und den CSV-Export:
   - **Gesamt**: Saison und Playoffs zusammen, ohne Testspiele
   - **Saison**: nur Saisonspiele
   - **Playoffs**: nur Playoff-Spiele
@@ -73,7 +75,7 @@ Reiter **Auswertung**:
 
 | Schaltfläche | Zweck |
 | --- | --- |
-| **Statistik als CSV** | Tabelle für Excel/Numbers mit den Spielen des gewählten Spielers, Summe und Schnitt pro Spiel. Die gewählte Spielart und der Filter Heim/Auswärts werden berücksichtigt. |
+| **Statistik als CSV** | Tabelle für Excel/Numbers mit den Spielen des gewählten Spielers, Summe und Schnitt pro Spiel. Die gewählte Mannschaft, die Spielart und der Filter Heim/Auswärts werden berücksichtigt. |
 | **Sicherung (JSON)** | Vollständige Sicherung aller Spieler und Spiele, auch der laufenden Spiele. |
 | **Importieren (CSV oder JSON)** | Liest eine Export-Datei dieser Seite ein. Eine Sicherung mit mehreren Spielern wird den passenden Spielern zugeordnet, fehlende Spieler werden angelegt. CSV-Dateien und ältere Sicherungen landen beim gewählten Spieler. Bereits vorhandene Spiele werden erkannt und nicht doppelt angelegt. |
 
