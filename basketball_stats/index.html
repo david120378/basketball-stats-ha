@@ -115,6 +115,55 @@ section{display:flex;flex-direction:column;gap:12px}
 .pick.players::-webkit-scrollbar{display:none}
 .pick.players button{flex:none;white-space:nowrap}
 .pick.players button.new{border-style:dashed;color:var(--tx)}
+/* Kompakte Erfassung: passt ohne Scrollen auf einen Handy-Bildschirm und füllt die verfügbare Höhe */
+header{padding:8px 16px 8px;gap:6px;border-radius:0 0 20px 20px}
+.brand .cond{font-size:20px}
+.pick.players button{min-height:38px}
+nav{padding:8px 16px 0}
+nav button{min-height:38px;font-size:14px}
+main{padding:10px 16px 0}
+#viewSeason{padding-top:16px}
+body.capture .wrap{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+#viewGame{flex:1;gap:8px}
+.scorebar{display:flex;align-items:center;gap:10px}
+.scorebar .sp{display:flex;align-items:baseline;gap:6px;flex:none}
+.scorebar .sp .cond{font-size:46px;line-height:1;color:var(--gold)}
+.scorebar .sp small{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--mu)}
+.scorebar .qs{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.scorebar .q{background:rgba(243,238,228,.06);border:1px solid var(--line);border-radius:10px;padding:4px 6px;text-align:center}
+.scorebar .q span{display:block;font-size:10px;font-weight:600;color:var(--mu)}
+.scorebar .q b{display:block;font:400 19px/1.1 'Instrument Serif',Georgia,serif;white-space:nowrap}
+.meta{border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.meta summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:36px;padding:0 12px;font-size:13px;font-weight:600;color:var(--tx);cursor:pointer}
+.meta summary::-webkit-details-marker{display:none}
+.meta summary span:first-child{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta summary em{font-style:normal;color:var(--gold);font-weight:700;flex:none}
+.meta[open] summary em::after{content:' ▴'}
+.meta:not([open]) summary em::after{content:' ▾'}
+.meta .in{display:flex;flex-direction:column;gap:10px;padding:4px 12px 12px}
+#shootSec,#countSec{flex:1 1 auto;display:flex;gap:0}
+#shooters{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.shot{padding:8px;gap:6px;border-radius:16px}
+.shot .top{flex-direction:column;align-items:flex-start;gap:1px}
+.shot .top b{font-size:20px}
+.shot .top span{font-size:12px;white-space:nowrap}
+.shot button{border-radius:12px;border:1px solid var(--line2);background:transparent;color:var(--tx);font-weight:700}
+.shot .made{flex:1 1 44px;min-height:44px;background:var(--gold);border-color:var(--gold);color:var(--bg);font-size:16px}
+.shot .made small{display:block;font-size:11px;font-weight:700;opacity:.8}
+.shot .miss{flex:.6 1 40px;min-height:40px;font-size:14px}
+.shot .mini{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.shot .mini button{min-height:28px;font-size:11px;font-weight:600;color:var(--mu);padding:0}
+#counters{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:1fr;gap:8px}
+.tile{min-height:68px;flex-direction:column;border-radius:14px}
+.tile .add{flex:1;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:6px 2px 2px;text-align:center}
+.tile .l{font-size:11px;white-space:nowrap}
+.tile .n{font-size:28px;line-height:1}
+.tile .rem{width:auto;height:22px;flex:none;border:none;border-top:1px solid var(--line);background:transparent;color:var(--mu);font-size:18px;line-height:1}
+.tile.undo-t{align-items:stretch;justify-content:center;border-style:dashed}
+.tile.undo-t button{flex:1;border:none;background:none;color:var(--tx);font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.foot{display:flex;gap:8px}
+.foot .save{flex:1;min-height:50px;border-radius:16px;font-size:17px}
+.foot .reset{flex:none;min-height:50px;padding:0 14px;font-size:14px}
 .hidden{display:none!important}
 </style>
 </head>
@@ -122,24 +171,11 @@ section{display:flex;flex-direction:column;gap:12px}
 <div class="wrap">
 <header>
   <div class="brand">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E9B44C" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2v20M5 4.5c3 3.5 3 11.5 0 15M19 4.5c-3 3.5-3 11.5 0 15"/></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E9B44C" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2v20M5 4.5c3 3.5 3 11.5 0 15M19 4.5c-3 3.5-3 11.5 0 15"/></svg>
     <span class="cond">Basketball-Stats</span>
     <span class="sync" id="sync" role="status"></span>
   </div>
   <div class="pick players" id="players" role="group" aria-label="Spieler auswählen"></div>
-  <div class="row">
-    <div class="field" style="flex:1 1 180px"><label for="pname">Name</label><input id="pname" type="text" placeholder="Name eintragen" autocomplete="off"></div>
-    <div class="field" style="flex:0 0 88px"><label for="pnum">Nummer</label><input id="pnum" type="text" inputmode="numeric" maxlength="3" placeholder="00" autocomplete="off"></div>
-  </div>
-  <div class="score">
-    <div><small>Punkte heute</small><span class="pts cond" id="pts">0</span></div>
-    <div class="chips">
-      <div class="chip"><span>Wurf</span><b class="cond" id="fgPct">–</b></div>
-      <div class="chip"><span>Dreier</span><b class="cond" id="p3Pct">–</b></div>
-      <div class="chip"><span>Freiwurf</span><b class="cond" id="ftPct">–</b></div>
-      <div class="chip"><span>Rebounds</span><b class="cond" id="reb">0</b></div>
-    </div>
-  </div>
 </header>
 
 <nav aria-label="Ansicht">
@@ -149,29 +185,43 @@ section{display:flex;flex-direction:column;gap:12px}
 
 <main id="viewGame">
   <div class="banner hidden" id="banner"><span id="bannerText"></span><button type="button" data-act="cancel">Abbrechen</button></div>
-  <div class="top-actions">
-    <div class="field light"><label for="opp">Gegner</label><input id="opp" type="text" placeholder="z. B. TSV Rostock" autocomplete="off"></div>
-    <button type="button" class="undo" id="undo" data-act="undo">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Rückgängig
-    </button>
-  </div>
-  <div class="row" style="align-items:flex-end">
-    <div class="field light" style="flex:1 1 160px"><label for="gdate">Datum</label><input id="gdate" type="date"></div>
-    <div class="seg" role="group" aria-label="Heim oder Auswärts" style="flex:1 1 200px">
-      <button type="button" id="vHome" data-act="venue" data-v="home">Heimspiel</button>
-      <button type="button" id="vAway" data-act="venue" data-v="away">Auswärts</button>
+  <div class="scorebar" aria-label="Aktueller Stand">
+    <div class="sp"><span class="cond" id="pts">0</span><small>Punkte</small></div>
+    <div class="qs">
+      <div class="q"><span>Wurf</span><b id="fgPct">–</b></div>
+      <div class="q"><span>Dreier</span><b id="p3Pct">–</b></div>
+      <div class="q"><span>Freiwurf</span><b id="ftPct">–</b></div>
+      <div class="q"><span>Reb.</span><b id="reb">0</b></div>
     </div>
   </div>
-  <div class="seg" role="group" aria-label="Art des Spiels">
-    <button type="button" id="tSeason" data-act="gtype" data-v="season">Saison</button>
-    <button type="button" id="tPlayoff" data-act="gtype" data-v="playoff">Playoffs</button>
-    <button type="button" id="tFriendly" data-act="gtype" data-v="friendly">Testspiel</button>
+  <details class="meta" id="meta">
+    <summary><span id="metaSum"></span><em>Spieldaten</em></summary>
+    <div class="in">
+      <div class="row">
+        <div class="field" style="flex:1 1 180px"><label for="pname">Name</label><input id="pname" type="text" placeholder="Name eintragen" autocomplete="off"></div>
+        <div class="field" style="flex:0 0 88px"><label for="pnum">Nummer</label><input id="pnum" type="text" inputmode="numeric" maxlength="3" placeholder="00" autocomplete="off"></div>
+      </div>
+      <div class="row">
+        <div class="field light" style="flex:1 1 160px"><label for="opp">Gegner</label><input id="opp" type="text" placeholder="z. B. TSV Rostock" autocomplete="off"></div>
+        <div class="field light" style="flex:1 1 140px"><label for="gdate">Datum</label><input id="gdate" type="date"></div>
+      </div>
+      <div class="seg" role="group" aria-label="Heim oder Auswärts">
+        <button type="button" id="vHome" data-act="venue" data-v="home">Heimspiel</button>
+        <button type="button" id="vAway" data-act="venue" data-v="away">Auswärts</button>
+      </div>
+      <div class="seg" role="group" aria-label="Art des Spiels">
+        <button type="button" id="tSeason" data-act="gtype" data-v="season">Saison</button>
+        <button type="button" id="tPlayoff" data-act="gtype" data-v="playoff">Playoffs</button>
+        <button type="button" id="tFriendly" data-act="gtype" data-v="friendly">Testspiel</button>
+      </div>
+    </div>
+  </details>
+  <section id="shootSec" aria-label="Würfe"><div id="shooters"></div></section>
+  <section id="countSec" aria-label="Spielzüge"><div id="counters"></div></section>
+  <div class="foot">
+    <button type="button" class="save" id="save" data-act="save">Spiel speichern</button>
+    <button type="button" class="reset" id="reset" data-act="reset">Leeren</button>
   </div>
-  <section aria-label="Würfe"><h2>Würfe</h2><div id="shooters" style="display:flex;flex-direction:column;gap:12px"></div></section>
-  <section aria-label="Weitere Statistiken"><h2>Spielzüge</h2><div class="grid2" id="counters"></div></section>
-  <button type="button" class="save" id="save" data-act="save">Spiel speichern</button>
-  <button type="button" class="reset" id="reset" data-act="reset">Aktuelles Spiel leeren</button>
-  <p class="note">Die Daten werden auf dem Server gespeichert und laufend mit allen Geräten abgeglichen.</p>
 </main>
 
 <main id="viewSeason" class="hidden">
@@ -275,7 +325,7 @@ section{display:flex;flex-direction:column;gap:12px}
   function addPlayer() {
     stash();
     var id = Date.now(); P.list.push({ id: id, name: '', number: '' });
-    switchPlayer(id); S.tab = 'game'; persist(); render(); $('pname').focus();
+    switchPlayer(id); S.tab = 'game'; persist(); render(); $('meta').open = true; $('pname').focus();
   }
   var delArmed = false, delTimer = null;
   function deletePlayer() {
@@ -693,7 +743,6 @@ section{display:flex;flex-direction:column;gap:12px}
     $('tabSeason').className = S.tab === 'season' ? 'on' : '';
     $('viewGame').classList.toggle('hidden', S.tab !== 'game');
     $('viewSeason').classList.toggle('hidden', S.tab !== 'season');
-    $('undo').disabled = S.undo.length === 0;
     $('bCsv').disabled = !S.history.length; $('bJson').disabled = !S.history.length && !P.list.some(function (x) { return x.id !== P.pid && x.history && x.history.length; });
     var pl = function (x) { var nm = String(x.name || '').trim(), nr = String(x.number || '').trim(); return (nm || 'Neuer Spieler') + (nr ? ' #' + nr : ''); };
     $('players').innerHTML = P.list.map(function (x) {
@@ -718,26 +767,30 @@ section{display:flex;flex-direction:column;gap:12px}
     $('vAway').setAttribute('aria-pressed', S.venue === 'away');
     $('reset').disabled = total(g) === 0;
     $('reset').className = 'reset' + (armed ? ' arm' : '');
-    $('reset').textContent = armed ? 'Wirklich alles leeren? Nochmal tippen' : 'Aktuelles Spiel leeren';
+    $('reset').textContent = armed ? 'Sicher?' : 'Leeren';
+    $('reset').setAttribute('aria-label', armed ? 'Wirklich alles leeren? Nochmal tippen' : 'Aktuelles Spiel leeren');
+    document.body.classList.toggle('capture', S.tab === 'game');
+    $('metaSum').textContent = (S.venue === 'away' ? 'Auswärts' : 'Heim') + ' · ' + TYPES[S.type] + ' · ' + (S.opp.trim() ? 'gegen ' + S.opp.trim() : 'Gegner offen') + ' · ' + fmtDate(S.date).slice(0, 6);
 
     var shooters = [
       ['Freiwurf', 'ft', 1], ['Zweier', 'p2', 2], ['Dreier', 'p3', 3]
     ];
     $('shooters').innerHTML = shooters.map(function (s) {
       var m = g[s[1] + 'm'], a = g[s[1] + 'a'];
-      return '<div class="card shot"><div class="top"><b>' + s[0] + '</b><span>' + m + ' / ' + a + ' · ' + pct(m, a) + '</span></div>' +
-        '<div class="pair"><button type="button" class="made" data-act="add" data-k="' + s[1] + 'm,' + s[1] + 'a">Treffer +' + s[2] + '</button>' +
-        '<button type="button" data-act="add" data-k="' + s[1] + 'a">Fehlwurf</button></div>' +
-        '<div class="small"><button type="button" data-act="rem" data-k="' + s[1] + 'm,' + s[1] + 'a" ' + (m < 1 ? 'disabled' : '') + ' aria-label="Einen Treffer ' + s[0] + ' entfernen">− Treffer</button>' +
-        '<button type="button" data-act="rem" data-k="' + s[1] + 'a" ' + (a - m < 1 ? 'disabled' : '') + ' aria-label="Einen Fehlwurf ' + s[0] + ' entfernen">− Fehlwurf</button></div></div>';
+      return '<div class="card shot"><div class="top"><b>' + s[0] + '</b><span>' + m + '/' + a + ' · ' + pct(m, a) + '</span></div>' +
+        '<button type="button" class="made" data-act="add" data-k="' + s[1] + 'm,' + s[1] + 'a" aria-label="' + s[0] + ' Treffer">Treffer<small>+' + s[2] + '</small></button>' +
+        '<button type="button" class="miss" data-act="add" data-k="' + s[1] + 'a" aria-label="' + s[0] + ' Fehlwurf">Fehlwurf</button>' +
+        '<div class="mini"><button type="button" data-act="rem" data-k="' + s[1] + 'm,' + s[1] + 'a" ' + (m < 1 ? 'disabled' : '') + ' aria-label="Einen Treffer ' + s[0] + ' entfernen">− Treff.</button>' +
+        '<button type="button" data-act="rem" data-k="' + s[1] + 'a" ' + (a - m < 1 ? 'disabled' : '') + ' aria-label="Einen Fehlwurf ' + s[0] + ' entfernen">− Fehl.</button></div></div>';
     }).join('');
 
-    var counters = [['oreb','Off. Rebound'],['dreb','Def. Rebound'],['ast','Assist'],['stl','Steal'],['blk','Block'],['tov','Ballverlust'],['pf','Foul']];
+    var counters = [['oreb','Off. Reb.','Offensiv-Rebound'],['dreb','Def. Reb.','Defensiv-Rebound'],['ast','Assist','Assist'],['stl','Steal','Steal'],['blk','Block','Block'],['tov','Ballverl.','Ballverlust'],['pf','Foul','Foul']];
     $('counters').innerHTML = counters.map(function (c) {
-      return '<div class="card tile"><button type="button" class="add" data-act="add" data-k="' + c[0] + '" aria-label="' + c[1] + ' plus eins">' +
-        '<span><span class="l">' + c[1] + '</span><span class="n">' + g[c[0]] + '</span></span><span class="plus">' + PLUS + '</span></button>' +
-        '<button type="button" class="rem" data-act="rem" data-k="' + c[0] + '" ' + (g[c[0]] < 1 ? 'disabled' : '') + ' aria-label="' + c[1] + ' minus eins">−</button></div>';
-    }).join('');
+      return '<div class="card tile"><button type="button" class="add" data-act="add" data-k="' + c[0] + '" aria-label="' + c[2] + ' plus eins">' +
+        '<span class="l">' + c[1] + '</span><span class="n">' + g[c[0]] + '</span></button>' +
+        '<button type="button" class="rem" data-act="rem" data-k="' + c[0] + '" ' + (g[c[0]] < 1 ? 'disabled' : '') + ' aria-label="' + c[2] + ' minus eins">−</button></div>';
+    }).join('') + '<div class="card tile undo-t"><button type="button" id="undo" data-act="undo" ' + (S.undo.length ? '' : 'disabled') + '>' +
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Rückgängig</button></div>';
 
     var nm = S.name.trim(), num = S.number.trim();
     $('playerTitle').textContent = (nm || 'Mein Spieler') + (num ? ' #' + num : '');

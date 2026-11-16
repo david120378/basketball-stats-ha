@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.5.0 – 2026-11-16
+
+- Erfassungsansicht kompakt: Würfe, Spielzüge, Rückgängig und Speichern passen ohne Scrollen auf einen Handy-Bildschirm und füllen die verfügbare Höhe
+- Name, Nummer, Gegner, Datum, Heim/Auswärts und Art stecken jetzt in der aufklappbaren Zeile „Spieldaten“
+- Punkte und Quoten des laufenden Spiels als schmale Zeile über den Schaltflächen
+
 ## 1.4.0 – 2026-11-16
 
 - Neu: mehrere Erfasser gleichzeitig – jeder Spieler wird einzeln gespeichert, sodass mehrere Geräte parallel verschiedene Spieler erfassen können, ohne sich zu überschreiben

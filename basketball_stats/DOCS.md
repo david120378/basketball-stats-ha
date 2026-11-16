@@ -7,11 +7,11 @@ Mit dieser App erfasst du die Statistiken eines oder mehrerer Basketballspieler 
 1. App installieren und **Starten**. „Beim Booten starten“ ist bereits aktiv.
 2. Optional **In der Seitenleiste anzeigen** einschalten – dann erscheint der Eintrag **Basketball**.
 3. Die Seite über die Seitenleiste oder über **Benutzeroberfläche öffnen** aufrufen.
-4. Oben **Name** und **Nummer** des Spielers eintragen. Beides bleibt gespeichert.
+4. Im Reiter **Spiel erfassen** die Zeile **Spieldaten** aufklappen und **Name** und **Nummer** des Spielers eintragen. Beides bleibt gespeichert.
 
 ## Mehrere Spieler
 
-- Über **+ Spieler** oben auf der Seite legst du einen weiteren Spieler an und trägst Name und Nummer ein.
+- Über **+ Spieler** oben auf der Seite legst du einen weiteren Spieler an und trägst Name und Nummer ein (die Spieldaten klappen dafür automatisch auf).
 - Ein Tipp auf einen Spieler in der Leiste wechselt zu ihm. Alles darunter – laufendes Spiel, Auswertung, Diagramme, Spielliste – gehört immer zum gewählten Spieler.
 - Du kannst während eines Spiels zwischen Spielern hin- und herwechseln; jeder behält sein laufendes Spiel. Hat der Spieler, zu dem du wechselst, noch nichts erfasst, werden Gegner, Datum, Heim/Auswärts und Art übernommen.
 - **Spiel speichern** speichert nur das Spiel des gewählten Spielers – also für jeden Spieler einzeln speichern.
@@ -37,17 +37,17 @@ Unterwegs erreichst du die Seite auf demselben Weg wie Home Assistant selbst, zu
 
 ## Ein Spiel erfassen
 
-Reiter **Spiel erfassen**:
+Reiter **Spiel erfassen**. Die Ansicht ist so gebaut, dass alle Schaltflächen ohne Scrollen auf einen Handy-Bildschirm passen.
 
-1. **Gegner** und **Datum** eintragen, **Heimspiel** oder **Auswärts** wählen.
+1. Die Zeile **Spieldaten** aufklappen, **Gegner** und **Datum** eintragen, **Heimspiel** oder **Auswärts** wählen. Zugeklappt zeigt die Zeile die Angaben als Zusammenfassung.
 2. Die Art des Spiels wählen: **Saison**, **Playoffs** oder **Testspiel**. Die Auswahl bleibt für das nächste Spiel stehen.
 3. Während des Spiels mittippen:
    - **Würfe** (Freiwurf, 2er, 3er): **Treffer** oder **Fehlwurf** antippen. Punkte und Quoten rechnet die Seite selbst aus.
-   - **Spielzüge**: Offensiv- und Defensiv-Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls über die Plus-Kachel hochzählen.
+   - **Spielzüge**: Offensiv- und Defensiv-Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls durch Antippen der Kachel hochzählen.
 4. Vertippt? **Rückgängig** nimmt die letzte Eingabe zurück; mit **−** lässt sich jeder Wert einzeln korrigieren.
 5. Nach dem Spiel **Spiel speichern**. Das Spiel wandert in die Auswertung, die Eingabe ist wieder leer.
 
-**Aktuelles Spiel leeren** verwirft die laufende Eingabe. Zur Sicherheit muss die Schaltfläche zweimal angetippt werden.
+**Leeren** verwirft die laufende Eingabe. Zur Sicherheit muss die Schaltfläche zweimal angetippt werden.
 
 Oben rechts steht der Speicherstatus: **Gespeichert** heißt, die Daten liegen in Home Assistant. Bei **Offline – nur lokal gespeichert** bleiben die Eingaben zunächst im Browser und werden automatisch übertragen, sobald die Verbindung wieder steht.
 

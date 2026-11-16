@@ -30,8 +30,8 @@ Voraussetzung: Home Assistant OS oder Supervised (Apps werden unterstützt), Arc
 
 ## Benutzung in Kürze
 
-1. Seite über die Seitenleiste öffnen, **Name** und **Nummer** eintragen. Weitere Spieler legst du mit **+ Spieler** an und wechselst über die Leiste oben.
-2. Im Reiter **Spiel erfassen** Gegner, Datum, Heim/Auswärts und die Art des Spiels setzen und während des Spiels Würfe und Spielzüge antippen. **Rückgängig** korrigiert die letzte Eingabe.
+1. Seite über die Seitenleiste öffnen, unter **Spieldaten** **Name** und **Nummer** eintragen. Weitere Spieler legst du mit **+ Spieler** an und wechselst über die Leiste oben.
+2. Im Reiter **Spiel erfassen** unter **Spieldaten** Gegner, Datum, Heim/Auswärts und die Art des Spiels setzen und während des Spiels Würfe und Spielzüge antippen. **Rückgängig** korrigiert die letzte Eingabe.
 3. Nach dem Spiel **Spiel speichern**.
 4. Im Reiter **Auswertung** die Spielart wählen und Schnitt, Quoten, Verlaufsdiagramme und alle Spiele ansehen, Spiele bearbeiten oder löschen, exportieren und importieren.
 
