@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.8.0 – 2026-11-16
+
+- Neu: Saisons – eine Saison lässt sich beenden, neue Spiele zählen danach für die nächste Saison
+- Auswertung und Vergleich je Saison oder über alle Saisons; die aktuelle Saison ist voreingestellt
+- Der Saisonwechsel gilt für alle Spieler und lässt sich zurücknehmen, solange in der neuen Saison noch kein Spiel gespeichert ist
+- Die Spielart „Saison“ heißt jetzt „Hauptrunde“, damit sie nicht mit der Saison verwechselt wird
+- CSV-Export und -Import um die Spalte „Saison“ erweitert; bereits gespeicherte Spiele gehören zur ersten Saison
+
 ## 1.7.0 – 2026-11-16
 
 - Neu: Reiter „Vergleich“ – Spieler nebeneinander vergleichen

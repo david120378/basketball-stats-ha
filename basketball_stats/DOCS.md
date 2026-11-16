@@ -41,7 +41,7 @@ Reiter **Spiel erfassen**. Die Ansicht ist so gebaut, dass alle Schaltflächen o
 
 1. Die Zeile **Spieldaten** aufklappen, **Gegner** und **Datum** eintragen, **Heimspiel** oder **Auswärts** wählen. Zugeklappt zeigt die Zeile die Angaben als Zusammenfassung.
 2. Spielt der Spieler in mehreren Mannschaften: unter **Mannschaft** den Namen eintragen (z. B. „U14“) oder eine bereits verwendete Mannschaft antippen. Die Auswahl bleibt für das nächste Spiel stehen.
-3. Die Art des Spiels wählen: **Saison**, **Playoffs** oder **Testspiel**. Die Auswahl bleibt für das nächste Spiel stehen.
+3. Die Art des Spiels wählen: **Hauptrunde**, **Playoffs** oder **Testspiel**. Die Auswahl bleibt für das nächste Spiel stehen.
 4. Während des Spiels mittippen:
    - **Würfe** (Freiwurf, 2er, 3er): **Treffer** oder **Fehlwurf** antippen. Punkte und Quoten rechnet die Seite selbst aus.
    - **Spielzüge**: Offensiv- und Defensiv-Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls durch Antippen der Kachel hochzählen.
@@ -56,10 +56,11 @@ Oben rechts steht der Speicherstatus: **Gespeichert** heißt, die Daten liegen i
 
 Reiter **Auswertung**:
 
+- Auswahl der Saison (erscheint ab der zweiten Saison): die aktuelle Saison ist voreingestellt, ältere Saisons und **Alle Saisons** sind wählbar.
 - Auswahl der Mannschaft (erscheint, sobald ein Spiel einer Mannschaft zugeordnet ist): **Alle Mannschaften**, jede einzelne Mannschaft oder **Ohne Mannschaft** für Spiele ohne Zuordnung. Ältere Spiele ordnest du über den Stift in der Spielliste nachträglich zu.
 - Auswahl der Spielart – sie gilt zusammen mit der Mannschaft für alle Zahlen, Diagramme, die Spielliste und den CSV-Export:
-  - **Gesamt**: Saison und Playoffs zusammen, ohne Testspiele
-  - **Saison**: nur Saisonspiele
+  - **Gesamt**: Hauptrunde und Playoffs zusammen, ohne Testspiele
+  - **Hauptrunde**: nur Spiele der Hauptrunde
   - **Playoffs**: nur Playoff-Spiele
   - **Testspiele**: eigene, getrennte Statistik für Freundschafts- und Testspiele
 - **Schnitt pro Spiel** und **Trefferquoten** über die Spiele der gewählten Art.
@@ -71,11 +72,27 @@ Reiter **Auswertung**:
   - Der Filter Alle / Heim / Auswärts gilt auch für die Diagramme. Die Auswahl der Statistiken merkt sich das jeweilige Gerät.
 - **Alle Spiele** als Liste: mit dem Stift ein Spiel nachträglich bearbeiten, mit dem Papierkorb löschen.
 
+## Saison beenden
+
+Jedes Spiel gehört zu einer Saison. Neue Spiele zählen immer für die aktuelle Saison; die erste heißt nach dem laufenden Spieljahr, z. B. „2026/27“.
+
+1. Im Reiter **Auswertung** nach unten zum Abschnitt **Saison** gehen.
+2. Bei Bedarf den vorgeschlagenen Namen der neuen Saison ändern.
+3. **Saison … beenden und neue beginnen** zweimal antippen.
+
+Gut zu wissen:
+
+- Der Wechsel gilt für alle Spieler und alle Geräte.
+- Die Spiele der beendeten Saison bleiben erhalten. Du siehst sie über die Saison-Auswahl oben in der Auswertung und im Vergleich.
+- Ein laufendes, noch nicht gespeichertes Spiel zählt beim Speichern für die neue Saison. Also erst speichern, dann die Saison beenden.
+- Wird ein altes Spiel bearbeitet, bleibt es in seiner Saison.
+- **Saisonwechsel zurücknehmen** erscheint, solange in der neuen Saison noch kein Spiel gespeichert ist.
+
 ## Spieler vergleichen
 
 Reiter **Vergleich** (ab zwei Spielern):
 
-- Oben wählst du, welche Spieler in den Vergleich eingehen, und ob **Gesamt**, **Saison**, **Playoffs** oder **Testspiele** verglichen werden.
+- Oben wählst du, welche Spieler in den Vergleich eingehen, und ob **Gesamt**, **Hauptrunde**, **Playoffs** oder **Testspiele** verglichen werden. Gibt es mehrere Saisons, wählst du auch hier die Saison.
 - **Im Diagramm**: eine Statistik auswählen, die Balken zeigen den Wert je Spieler.
 - **Alle Werte**: Tabelle mit allen Statistiken, eine Spalte pro Spieler. Der beste Wert je Zeile ist hervorgehoben – bei Ballverlusten und Fouls der niedrigste. Bei vielen Spielern lässt sich die Tabelle seitlich schieben.
 - Zählwerte sind Schnitte pro Spiel, Quoten rechnen über alle Würfe. Verglichen werden die Spiele aller Mannschaften eines Spielers.

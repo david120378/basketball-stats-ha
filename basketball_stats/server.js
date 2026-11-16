@@ -13,7 +13,17 @@ const MAX_BODY = 1024 * 1024; // 1 MB je Spieler
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
 // ---- Datenhaltung: Stand im Speicher, Schreiben nacheinander und atomar (tmp + rename) ----
-// Format der Datei: { v: 3, players: [{ id, rev, name, number, history, ... }], deleted: [id, ...] }
+// Format der Datei: { v: 3, players: [{ id, rev, name, number, history, ... }], deleted: [id, ...], meta: { seasons: [Name, ...], rev } }
+// Die Saisons gelten für alle Spieler; jedes Spiel merkt sich die Nummer seiner Saison (sn), die letzte ist die aktuelle.
+function defSeason() {
+  const d = new Date(); let y = d.getFullYear(); if (d.getMonth() < 6) y--;
+  return y + '/' + String((y + 1) % 100).padStart(2, '0');
+}
+function cleanSeasons(a) {
+  if (!Array.isArray(a)) return null;
+  const out = a.map((x) => String(x == null ? '' : x).trim().slice(0, 40)).filter(Boolean).slice(0, 60);
+  return out.length ? out : null;
+}
 function load() {
   let d = {};
   try { d = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) || {}; } catch (e) { d = {}; }
@@ -21,12 +31,13 @@ function load() {
     return {
       v: 3,
       players: d.players.filter((p) => p && typeof p === 'object').map((p, i) => Object.assign({}, p, { id: Number(p.id) || i + 1, rev: Number(p.rev) || 1 })),
-      deleted: Array.isArray(d.deleted) ? d.deleted.map(Number).filter(Boolean) : []
+      deleted: Array.isArray(d.deleted) ? d.deleted.map(Number).filter(Boolean) : [],
+      meta: { seasons: cleanSeasons(d.meta && d.meta.seasons) || [defSeason()], rev: Number(d.meta && d.meta.rev) || 1 }
     };
   }
   // Altes Format (ein Spieler, Felder direkt in der Datei) übernehmen
   const has = d.name || d.number || (Array.isArray(d.history) && d.history.length) || d.game;
-  return { v: 3, players: has ? [Object.assign({}, d, { id: 1, rev: 1 })] : [], deleted: [] };
+  return { v: 3, players: has ? [Object.assign({}, d, { id: 1, rev: 1 })] : [], deleted: [], meta: { seasons: [defSeason()], rev: 1 } };
 }
 const state = load();
 
@@ -87,6 +98,17 @@ http.createServer((req, res) => {
   if (url === '/api/data') {
     if (req.method === 'GET') return send(res, 200, JSON.stringify(state));
     return send(res, 405, '{"error":"method not allowed"}');
+  }
+
+  // Saisons (für alle Spieler)
+  if (url === '/api/meta') {
+    if (req.method !== 'PUT') return send(res, 405, '{"error":"method not allowed"}');
+    return readJson(req, res, (obj) => {
+      const seasons = cleanSeasons(obj.seasons);
+      if (!seasons) return send(res, 400, '{"error":"invalid seasons"}');
+      state.meta = { seasons: seasons, rev: (state.meta.rev || 0) + 1 };
+      flush((err) => send(res, err ? 500 : 200, err ? '{"error":"write failed"}' : JSON.stringify({ ok: true, rev: state.meta.rev })));
+    });
   }
 
   // Einzelner Spieler: speichern oder löschen
