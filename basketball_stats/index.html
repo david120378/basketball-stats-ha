@@ -111,6 +111,10 @@ section{display:flex;flex-direction:column;gap:12px}
 .chart .read strong{color:var(--tx);font-size:15px}
 .seg.two button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 2px;font-size:14px;min-width:0}
 .seg.two button small{font-size:11px;font-weight:600;opacity:.85}
+.pick.players{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.pick.players::-webkit-scrollbar{display:none}
+.pick.players button{flex:none;white-space:nowrap}
+.pick.players button.new{border-style:dashed;color:var(--tx)}
 .hidden{display:none!important}
 </style>
 </head>
@@ -122,8 +126,9 @@ section{display:flex;flex-direction:column;gap:12px}
     <span class="cond">Basketball-Stats</span>
     <span class="sync" id="sync" role="status"></span>
   </div>
+  <div class="pick players" id="players" role="group" aria-label="Spieler auswählen"></div>
   <div class="row">
-    <div class="field" style="flex:1 1 180px"><label for="pname">Spieler</label><input id="pname" type="text" placeholder="Name eintragen" autocomplete="off"></div>
+    <div class="field" style="flex:1 1 180px"><label for="pname">Name</label><input id="pname" type="text" placeholder="Name eintragen" autocomplete="off"></div>
     <div class="field" style="flex:0 0 88px"><label for="pnum">Nummer</label><input id="pnum" type="text" inputmode="numeric" maxlength="3" placeholder="00" autocomplete="off"></div>
   </div>
   <div class="score">
@@ -201,6 +206,7 @@ section{display:flex;flex-direction:column;gap:12px}
     </section>
     <section aria-label="Alle Spiele"><h3>Alle Spiele</h3><div id="games" style="display:flex;flex-direction:column;gap:12px"></div></section>
   </div>
+  <button type="button" class="reset hidden" id="delPlayer" data-act="delplayer"></button>
 </main>
 </div>
 
@@ -215,6 +221,7 @@ section{display:flex;flex-direction:column;gap:12px}
   var TYPES = { season:'Saison', playoff:'Playoffs', friendly:'Testspiel' };
   function gtype(x) { var t = x && x.type; return t === 'playoff' || t === 'friendly' ? t : 'season'; }
   function inType(x) { var t = gtype(x); return S.tfilter === 'comp' ? t !== 'friendly' : t === S.tfilter; }
+  var barSel = {};
   var S = { tfilter:'comp', type:'season', filter:'all', name:'', number:'', opp:'', date:'', venue:'home', editId:null, draft:null, tab:'game', game: blank(), undo:[], history:[] };
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function today() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
@@ -229,8 +236,60 @@ section{display:flex;flex-direction:column;gap:12px}
   function pct(m, a) { return a ? Math.round(m / a * 100) + ' %' : '–'; }
   function f1(x) { return (Math.round(x * 10) / 10).toFixed(1).replace('.', ','); }
 
-  function payload() { return { name:S.name, number:S.number, opp:S.opp, date:S.date, venue:S.venue, type:S.type, editId:S.editId, draft:S.draft, game:S.game, history:S.history }; }
+  // Mehrere Spieler: P.list hält alle Spieler, S ist die Arbeitskopie des gerade gewählten Spielers.
+  var AKEY = 'hoopslog-active-v1';
+  var P = { list: [{ id: 1 }], pid: 1 };
+  function findP(id) { return P.list.filter(function (x) { return x.id === id; })[0]; }
+  function stash() {
+    var c = cur(), f = false;
+    P.list = P.list.map(function (x) { if (x.id === P.pid) { f = true; return c; } return x; });
+    if (!f) P.list.push(c);
+  }
+  function payload() { stash(); return { v: 2, active: P.pid, players: P.list }; }
+  function migrate(d) {
+    d = d || {};
+    if (Array.isArray(d.players) && d.players.length) {
+      return { active: d.active, players: d.players.map(function (x, i) { return Object.assign({}, x, { id: Number(x.id) || i + 1 }); }) };
+    }
+    return { active: 1, players: [Object.assign({}, d, { id: 1 })] };
+  }
   function apply(d) {
+    var m = migrate(d), want = null;
+    try { want = Number(localStorage.getItem(AKEY)); } catch (e) {}
+    P.list = m.players;
+    P.pid = findP(want) ? want : findP(Number(m.active)) ? Number(m.active) : P.list[0].id;
+    loadPlayer(findP(P.pid));
+  }
+  function rememberActive() { try { localStorage.setItem(AKEY, String(P.pid)); } catch (e) {} }
+  function switchPlayer(id) {
+    if (id === P.pid || !findP(id)) return;
+    var prev = { opp: S.opp, date: S.date, venue: S.venue, type: S.type };
+    stash(); P.pid = id; loadPlayer(findP(id));
+    // Läuft für diesen Spieler noch kein Spiel, die Spieldaten (Gegner, Datum, Ort, Art) übernehmen
+    if (S.editId === null && total(S.game) === 0 && !S.opp) {
+      S.opp = prev.opp; S.date = prev.date; S.venue = prev.venue; S.type = prev.type;
+      $('opp').value = S.opp; $('gdate').value = S.date;
+    }
+    rememberActive(); persist(); render();
+  }
+  function addPlayer() {
+    stash();
+    var id = Date.now(); P.list.push({ id: id, name: '', number: '' });
+    switchPlayer(id); S.tab = 'game'; render(); $('pname').focus();
+  }
+  var delArmed = false, delTimer = null;
+  function deletePlayer() {
+    if (P.list.length < 2) return;
+    if (!delArmed) { delArmed = true; render(); delTimer = setTimeout(function () { delArmed = false; render(); }, 4000); return; }
+    clearTimeout(delTimer); delArmed = false;
+    var gone = P.pid;
+    P.list = P.list.filter(function (x) { return x.id !== gone; });
+    P.pid = P.list[0].id; loadPlayer(P.list[0]);
+    rememberActive(); persist(); render();
+  }
+  function cur() { return { id:P.pid, name:S.name, number:S.number, opp:S.opp, date:S.date, venue:S.venue, type:S.type, editId:S.editId, draft:S.draft, game:S.game, history:S.history }; }
+  function loadPlayer(d) {
+    barSel = {};
     S.name = d.name || ''; S.number = d.number || ''; S.opp = d.opp || '';
     S.game = Object.assign(blank(), d.game || {});
     S.date = d.date || today(); S.venue = d.venue === 'away' ? 'away' : 'home'; S.type = gtype(d);
@@ -242,7 +301,8 @@ section{display:flex;flex-direction:column;gap:12px}
     S.undo = [];
     $('pname').value = S.name; $('pnum').value = S.number; $('opp').value = S.opp; $('gdate').value = S.date;
   }
-  function hasData(d) { return d && (d.name || d.number || (d.history && d.history.length) || (d.game && total(Object.assign(blank(), d.game)) > 0)); }
+  function hasData(d) { return !!d && (Array.isArray(d.players) ? d.players.some(hasP) : hasP(d)); }
+  function hasP(d) { return d && (d.name || d.number || (d.history && d.history.length) || (d.game && total(Object.assign(blank(), d.game)) > 0)); }
 
   function setSync(t) { $('sync').textContent = t; }
   function persist() {
@@ -364,7 +424,8 @@ section{display:flex;flex-direction:column;gap:12px}
     download(fileBase(sfx) + '.csv', csv, 'text/csv;charset=utf-8');
   }
   function exportJson() {
-    download(fileBase('Sicherung') + '.json', JSON.stringify(payload(), null, 2), 'application/json');
+    var all = P.list.length > 1 ? 'Statistik_Alle_Spieler_Sicherung_' + today() : fileBase('Sicherung');
+    download(all + '.json', JSON.stringify(payload(), null, 2), 'application/json');
   }
 
   function parseCsv(text) {
@@ -408,6 +469,27 @@ section{display:flex;flex-direction:column;gap:12px}
     });
     return out;
   }
+  function importPlayers(players, msg) {
+    stash();
+    var added = 0, dup = 0, newP = 0, base = Date.now(), k = 0;
+    var same = function (a, b) { return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase(); };
+    players.forEach(function (ip) {
+      if (!ip || typeof ip !== 'object') return;
+      var t = findP(Number(ip.id)) || P.list.filter(function (x) { return String(ip.name || '').trim() && same(x.name, ip.name) && same(x.number, ip.number); })[0];
+      if (!t) { t = { id: findP(Number(ip.id)) || !Number(ip.id) ? base + (k++) : Number(ip.id), name: String(ip.name || ''), number: String(ip.number || ''), history: [] }; P.list.push(t); newP++; }
+      if (!Array.isArray(t.history)) t.history = [];
+      var seen = {}; t.history.forEach(function (r) { seen[sig(normRec(r, r.id))] = true; });
+      (Array.isArray(ip.history) ? ip.history : []).forEach(function (x) {
+        var r = normRec(x, base + (k++));
+        if (x.id && !t.history.some(function (h) { return h.id === x.id; })) r.id = Number(x.id) || r.id;
+        if (seen[sig(r)]) { dup++; return; }
+        seen[sig(r)] = true; t.history.push(r); added++;
+      });
+    });
+    loadPlayer(findP(P.pid)); persist(); render();
+    msg.textContent = added + (added === 1 ? ' Spiel importiert' : ' Spiele importiert') + (newP ? ', ' + newP + (newP === 1 ? ' Spieler neu angelegt' : ' Spieler neu angelegt') : '') +
+      (dup ? ', ' + dup + ' bereits vorhanden (übersprungen).' : '.');
+  }
   function importText(name, text) {
     var msg = $('importMsg'), list, d = null;
     try {
@@ -416,6 +498,7 @@ section{display:flex;flex-direction:column;gap:12px}
         if (!Array.isArray(list)) throw new Error('Keine Spiele in der Datei gefunden.');
       } else list = recsFromCsv(text);
     } catch (e) { msg.textContent = 'Import fehlgeschlagen: ' + e.message; return; }
+    if (d && !Array.isArray(d) && Array.isArray(d.players)) return importPlayers(d.players, msg);
     var seen = {}; S.history.forEach(function (r) { seen[sig(r)] = true; });
     var added = 0, dup = 0, base = Date.now();
     list.forEach(function (x, i) {
@@ -451,7 +534,7 @@ section{display:flex;flex-direction:column;gap:12px}
     ['tov', 'Ballverluste', 'Ballverluste', cnt1('tov')],
     ['pf', 'Fouls', 'Fouls', cnt1('pf')]
   ];
-  var chartSel = ['pts', 'fg', 'reb'], barSel = {};
+  var chartSel = ['pts', 'fg', 'reb'];
   try {
     var cs = JSON.parse(localStorage.getItem(CKEY));
     if (Array.isArray(cs)) chartSel = cs.filter(function (k) { return CHARTS.some(function (c) { return c[0] === k; }); });
@@ -544,7 +627,15 @@ section{display:flex;flex-direction:column;gap:12px}
     $('viewGame').classList.toggle('hidden', S.tab !== 'game');
     $('viewSeason').classList.toggle('hidden', S.tab !== 'season');
     $('undo').disabled = S.undo.length === 0;
-    $('bCsv').disabled = !S.history.length; $('bJson').disabled = !S.history.length;
+    $('bCsv').disabled = !S.history.length; $('bJson').disabled = !S.history.length && !P.list.some(function (x) { return x.id !== P.pid && x.history && x.history.length; });
+    var pl = function (x) { var nm = String(x.name || '').trim(), nr = String(x.number || '').trim(); return (nm || 'Neuer Spieler') + (nr ? ' #' + nr : ''); };
+    $('players').innerHTML = P.list.map(function (x) {
+      var me = x.id === P.pid, o = me ? { name: S.name, number: S.number } : x;
+      return '<button type="button" data-act="player" data-id="' + x.id + '" class="' + (me ? 'on' : '') + '" aria-pressed="' + me + '">' + esc(pl(o)) + '</button>';
+    }).join('') + '<button type="button" class="new" data-act="addplayer">+ Spieler</button>';
+    $('delPlayer').classList.toggle('hidden', P.list.length < 2);
+    $('delPlayer').className = 'reset' + (delArmed ? ' arm' : '') + (P.list.length < 2 ? ' hidden' : '');
+    $('delPlayer').textContent = delArmed ? '„' + pl({ name: S.name, number: S.number }) + '“ mit allen Spielen löschen? Nochmal tippen' : 'Diesen Spieler löschen';
     var editing = S.editId !== null;
     $('save').disabled = !editing && total(g) === 0;
     $('save').textContent = editing ? 'Änderungen speichern' : 'Spiel speichern';
@@ -637,6 +728,9 @@ section{display:flex;flex-direction:column;gap:12px}
     var a = b.getAttribute('data-act');
     if (a === 'add') add(b.getAttribute('data-k').split(','));
     else if (a === 'import') { $('file').click(); }
+    else if (a === 'player') switchPlayer(Number(b.getAttribute('data-id')));
+    else if (a === 'addplayer') addPlayer();
+    else if (a === 'delplayer') deletePlayer();
     else if (a === 'csv') exportCsv();
     else if (a === 'json') exportJson();
     else if (a === 'filter') { S.filter = b.getAttribute('data-v'); render(); }

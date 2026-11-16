@@ -1,9 +1,10 @@
 # Basketball-Stats – Home-Assistant-App
 
-Eine App für Home Assistant (früher „Add-on“), mit der du die Statistiken eines Basketballspielers Spiel für Spiel erfasst und über die Saison auswertest. Gedacht für das Mittippen am Spielfeldrand auf dem Handy; die Auswertung funktioniert genauso am Rechner.
+Eine App für Home Assistant (früher „Add-on“), mit der du die Statistiken eines oder mehrerer Basketballspieler Spiel für Spiel erfasst und über die Saison auswertest. Gedacht für das Mittippen am Spielfeldrand auf dem Handy; die Auswertung funktioniert genauso am Rechner.
 
 **Was es kann**
 
+- Mehrere Spieler führen, jeder mit eigenen Spielen und eigener Auswertung
 - Würfe erfassen (Freiwurf, 2er, 3er – Treffer und Fehlwürfe), dazu Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls
 - Punkte und Trefferquoten automatisch berechnen
 - Jedes Spiel mit Datum, Gegner, Heim/Auswärts und Art (Saison, Playoffs, Testspiel) speichern
@@ -28,7 +29,7 @@ Voraussetzung: Home Assistant OS oder Supervised (Apps werden unterstützt), Arc
 
 ## Benutzung in Kürze
 
-1. Seite über die Seitenleiste öffnen, **Spieler** und **Nummer** eintragen.
+1. Seite über die Seitenleiste öffnen, **Name** und **Nummer** eintragen. Weitere Spieler legst du mit **+ Spieler** an und wechselst über die Leiste oben.
 2. Im Reiter **Spiel erfassen** Gegner, Datum, Heim/Auswärts und die Art des Spiels setzen und während des Spiels Würfe und Spielzüge antippen. **Rückgängig** korrigiert die letzte Eingabe.
 3. Nach dem Spiel **Spiel speichern**.
 4. Im Reiter **Auswertung** die Spielart wählen und Schnitt, Quoten, Verlaufsdiagramme und alle Spiele ansehen, Spiele bearbeiten oder löschen, exportieren und importieren.

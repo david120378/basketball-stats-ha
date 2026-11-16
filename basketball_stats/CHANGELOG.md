@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.3.0 – 2026-11-16
+
+- Neu: mehrere Spieler – jeder mit eigenen Spielen, eigener Auswertung und eigenem laufenden Spiel
+- Spielerauswahl oben auf der Seite, „+ Spieler“ legt einen weiteren an, „Diesen Spieler löschen“ in der Auswertung
+- Beim Wechsel während eines Spiels werden Gegner, Datum, Heim/Auswärts und Art für den nächsten Spieler übernommen
+- Die JSON-Sicherung enthält alle Spieler; ältere Sicherungen und CSV-Dateien werden in den gerade gewählten Spieler importiert
+- Vorhandene Daten werden automatisch übernommen. Hinweis: Nach dem Update gespeicherte Daten lassen sich mit Versionen vor 1.3.0 nicht mehr lesen
+
 ## 1.2.0 – 2026-11-16
 
 - Neu: Art des Spiels – jedes Spiel wird als Saison, Playoffs oder Testspiel erfasst
