@@ -1,0 +1,13 @@
+{
+  "name": "basketball-stats-ha-tests",
+  "private": true,
+  "description": "Automatische Tests für die Home-Assistant-App Basketball-Stats. Wird für den Betrieb der App nicht gebraucht.",
+  "scripts": {
+    "test": "node --test --test-concurrency=1 tests/server.test.js tests/ui.test.js",
+    "test:server": "node --test tests/server.test.js",
+    "test:ui": "node --test --test-concurrency=1 tests/ui.test.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

@@ -2,6 +2,13 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.11.0 – 2026-11-16
+
+- Neu: Der Bildschirm bleibt wach, solange „Spiel erfassen“ offen ist (sofern Browser bzw. App das unterstützen)
+- Neu: Getippte Tasten leuchten kurz auf, damit die Eingabe auch aus dem Augenwinkel erkennbar ist
+- Schriften liegen jetzt in der App; es wird nichts mehr von außen nachgeladen
+- Automatische Tests für Server und Seite im Repository (Ordner `tests`)
+
 ## 1.10.0 – 2026-11-16
 
 - Neu: Overtime (OT) als fünfter Abschnitt neben Q1 bis Q4

@@ -48,6 +48,8 @@ Reiter **Spiel erfassen**. Die Ansicht ist so gebaut, dass alle Schaltflächen o
    - **Einsatzzeit**: Die Uhr-Schaltfläche antippen, wenn der Spieler aufs Feld kommt, und wieder antippen, wenn er ausgewechselt wird. Sie zeigt oben die Gesamtzeit und darunter die Zeit im laufenden Quarter; beim Wechsel des Quarters zählt die Zeit dort weiter. Die Uhr zählt die tatsächlich vergangene Zeit – bei längeren Unterbrechungen also anhalten. Unter **Spieldaten** stehen die Zeiten aller Quarter; die Gesamtminuten lassen sich dort von Hand korrigieren, die Aufteilung auf die Quarter bleibt dabei im Verhältnis erhalten.
    - **Würfe** (Freiwurf, 2er, 3er): **Treffer** oder **Fehlwurf** antippen. Punkte und Quoten rechnet die Seite selbst aus.
    - **Spielzüge**: Offensiv- und Defensiv-Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls durch Antippen der Kachel hochzählen.
+   - Jede getippte Taste leuchtet kurz auf – so siehst du auch aus dem Augenwinkel, dass die Eingabe angekommen ist.
+   - Solange **Spiel erfassen** offen ist, hält die Seite den Bildschirm wach, sofern Browser bzw. App das unterstützen. Geht der Bildschirm trotzdem aus, läuft die Einsatzzeit richtig weiter.
 6. Vertippt? **Rückgängig** nimmt die letzte Eingabe zurück; mit **−** lässt sich jeder Wert einzeln korrigieren.
 7. Nach dem Spiel **Spiel speichern**. Läuft die Uhr noch, wird sie dabei angehalten. Das Spiel wandert in die Auswertung, die Eingabe ist wieder leer.
 
@@ -115,6 +117,7 @@ Daten aus einer älteren Installation übernimmst du so: dort **Sicherung (JSON)
 ## Datenspeicherung und Zugriff
 
 - Die Daten liegen im App-Speicher (`/data/data.json`) und sind in jedem Home-Assistant-Backup enthalten.
+- Die App lädt nichts aus dem Internet nach; auch die Schriften liegen in der App.
 - Die App öffnet keinen Port nach außen. Sie beantwortet nur Anfragen, die über Home Assistant (Ingress) kommen; wer Home Assistant nicht nutzen darf, kommt nicht auf die Seite.
 - Alle Home-Assistant-Benutzer können die Seite öffnen, nicht nur Administratoren.
 

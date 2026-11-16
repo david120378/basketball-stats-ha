@@ -55,9 +55,25 @@ Home Assistant bietet ein Update nur an, wenn sich die Versionsnummer ändert. F
 
 1. `version` in [basketball_stats/config.yaml](basketball_stats/config.yaml) erhöhen.
 2. Einen Eintrag in [basketball_stats/CHANGELOG.md](basketball_stats/CHANGELOG.md) ergänzen – er erscheint in Home Assistant als Änderungsprotokoll.
-3. Committen, auf `main` pushen und den Commit mit `v<Version>` taggen, z. B. `v1.0.1`.
+3. Die Tests laufen lassen (`npm test`).
+4. Committen, auf `main` pushen und den Commit mit `v<Version>` taggen, z. B. `v1.0.1`.
 
 Aktuelle Version: siehe [config.yaml](basketball_stats/config.yaml), Verlauf im [Änderungsprotokoll](basketball_stats/CHANGELOG.md).
+
+## Tests
+
+Im Ordner `tests` liegen automatische Tests. Sie laufen bei jedem Push über GitHub Actions und lassen sich lokal starten (Node.js ab Version 20):
+
+```
+npm install
+npx playwright install chromium
+npm test
+```
+
+- `npm run test:server` prüft den Server (Speichern je Spieler, Löschen, Saisons, Übernahme alter Daten) und braucht keine weiteren Pakete.
+- `npm run test:ui` steuert die Seite in einem Browser: erfassen, Quarter und Einsatzzeit, zwei Geräte gleichzeitig, Auswertung, Saisonwechsel, Vergleich, Export/Import, Verhalten ohne Verbindung und ob die Erfassung auf einen Handy-Bildschirm passt.
+
+Vor jeder Veröffentlichung sollten alle Tests durchlaufen. Für den Betrieb der App werden `tests`, `package.json` und `package-lock.json` nicht gebraucht.
 
 ## Aufbau des Repositories
 
@@ -70,3 +86,5 @@ Aktuelle Version: siehe [config.yaml](basketball_stats/config.yaml), Verlauf im 
 | `basketball_stats/index.html` | Die Seite selbst |
 | `basketball_stats/DOCS.md` | Anleitung, in Home Assistant sichtbar |
 | `basketball_stats/CHANGELOG.md` | Änderungsprotokoll, in Home Assistant sichtbar |
+| `basketball_stats/fonts/` | Schriften (Instrument Serif, Public Sans) samt Lizenztexten |
+| `tests/` | Automatische Tests für Server und Seite |

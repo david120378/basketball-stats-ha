@@ -9,9 +9,12 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Stats">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+/* Schriften liegen in der App selbst (Ordner fonts), es wird nichts von außen nachgeladen */
+@font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/instrument-serif-latin-ext-400-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/instrument-serif-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Public Sans';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/public-sans-latin-ext-wght-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Public Sans';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/public-sans-latin-wght-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 *{box-sizing:border-box}
 :root{--bg:#21302B;--bar:#2A3832;--act:#3B4A42;--tx:#F3EEE4;--mu:#A7B5AC;--gold:#E9B44C;--card:rgba(243,238,228,.05);--line:rgba(243,238,228,.10);--line2:rgba(243,238,228,.18)}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:'Public Sans',system-ui,sans-serif;min-height:100vh}
@@ -196,6 +199,10 @@ nav button{padding:0 4px}
 .tbtn.on{background:var(--act);border-color:var(--gold);color:var(--gold)}
 .tbtn.on small{color:var(--gold)}
 #stBtn{flex:1 1 0}
+/* Rückmeldung beim Tippen: die getroffene Taste leuchtet kurz auf */
+@keyframes tap{0%{transform:scale(.93);filter:brightness(1.7)}100%{transform:none;filter:none}}
+.flash{animation:tap .32s ease-out}
+@media (prefers-reduced-motion:reduce){@keyframes tap{0%{filter:brightness(1.7)}100%{filter:none}}}
 .hidden{display:none!important}
 </style>
 </head>
@@ -1037,6 +1044,7 @@ nav button{padding:0 4px}
     $('reset').textContent = armed ? 'Sicher?' : 'Leeren';
     $('reset').setAttribute('aria-label', armed ? 'Wirklich alles leeren? Nochmal tippen' : 'Aktuelles Spiel leeren');
     document.body.classList.toggle('capture', S.tab === 'game');
+    syncWake();
     $('metaSum').textContent = (S.team.trim() ? S.team.trim() + ' · ' : '') + (S.venue === 'away' ? 'Auswärts' : 'Heim') + ' · ' + TYPES[S.type] + ' · ' + (S.opp.trim() ? 'gegen ' + S.opp.trim() : 'Gegner offen') + ' · ' + fmtDate(S.date).slice(0, 6);
 
     var shooters = [
@@ -1161,10 +1169,31 @@ nav button{padding:0 4px}
     }).join('');
   }
 
+  // Die Tasten werden bei jeder Eingabe neu gezeichnet – deshalb die neue Taste kurz aufleuchten lassen
+  function flash(act, k) {
+    var el = document.querySelector('#viewGame [data-act="' + act + '"][data-k="' + k + '"]');
+    if (!el) return;
+    if (act === 'add' && el.classList.contains('add')) el = el.parentNode;   // Zähler-Kachel als Ganzes
+    el.classList.add('flash');
+  }
+  // Bildschirm wachhalten, solange „Spiel erfassen“ offen ist (wo der Browser das unterstützt)
+  var wake = null, wakeBusy = false;
+  function syncWake() {
+    var want = S.tab === 'game' && !document.hidden;
+    if (!('wakeLock' in navigator)) return;
+    if (want && !wake && !wakeBusy) {
+      wakeBusy = true;
+      navigator.wakeLock.request('screen').then(function (w) {
+        wake = w; wakeBusy = false;
+        w.addEventListener('release', function () { if (wake === w) wake = null; });
+        if (!(S.tab === 'game' && !document.hidden)) syncWake();
+      }).catch(function () { wakeBusy = false; });
+    } else if (!want && wake) { var w0 = wake; wake = null; w0.release().catch(function () {}); }
+  }
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-act]'); if (!b) return;
     var a = b.getAttribute('data-act');
-    if (a === 'add') add(b.getAttribute('data-k').split(','));
+    if (a === 'add') { add(b.getAttribute('data-k').split(',')); flash(a, b.getAttribute('data-k')); }
     else if (a === 'import') { $('file').click(); }
     else if (a === 'player') switchPlayer(Number(b.getAttribute('data-id')));
     else if (a === 'addplayer') addPlayer();
@@ -1187,7 +1216,7 @@ nav button{padding:0 4px}
     else if (a === 'gtype') { S.type = b.getAttribute('data-v'); persist(); render(); }
     else if (a === 'tfilter') { S.tfilter = b.getAttribute('data-v'); render(); }
     else if (a === 'venue') { S.venue = b.getAttribute('data-v'); persist(); render(); }
-    else if (a === 'rem') remove(b.getAttribute('data-k').split(','));
+    else if (a === 'rem') { remove(b.getAttribute('data-k').split(',')); flash(a, b.getAttribute('data-k')); }
     else if (a === 'reset') reset();
     else if (a === 'undo') undo();
     else if (a === 'save') save();
@@ -1225,7 +1254,7 @@ nav button{padding:0 4px}
   $('snNew').addEventListener('input', function (e) { snDraft = e.target.value; });
   $('team').addEventListener('input', function (e) { S.team = e.target.value; persist(); render(); });
   $('opp').addEventListener('input', function (e) { S.opp = e.target.value; persist(); });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) pull(false); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) pull(false); syncWake(); });
 
   // Start: erst lokale Kopie anzeigen, dann Serverstand laden
   try { var raw = localStorage.getItem(KEY); if (raw) apply(JSON.parse(raw)); } catch (e) {}

@@ -142,6 +142,16 @@ http.createServer((req, res) => {
     });
   }
 
+  // Schriften (liegen in der App, damit nichts von außen geladen werden muss)
+  const f = /^\/fonts\/([a-z0-9-]+\.woff2)$/.exec(url);
+  if (f) {
+    return fs.readFile(path.join(__dirname, 'fonts', f[1]), (err, buf) => {
+      if (err) return send(res, 404, 'Not found', 'text/plain');
+      res.writeHead(200, { 'Content-Type': 'font/woff2', 'Cache-Control': 'public, max-age=31536000, immutable' });
+      res.end(buf);
+    });
+  }
+
   if (url === '/' || url === '/index.html') {
     return fs.readFile(INDEX, (err, buf) => err ? send(res, 500, 'error', 'text/plain') : send(res, 200, buf, 'text/html; charset=utf-8'));
   }
