@@ -8,6 +8,7 @@ Eine App für Home Assistant (früher „Add-on“), mit der du die Statistiken 
 - Mehrere Erfasser gleichzeitig: jedes Gerät erfasst einen anderen Spieler, die Geräte gleichen sich laufend ab
 - Würfe erfassen (Freiwurf, 2er, 3er – Treffer und Fehlwürfe), dazu Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls
 - Punkte und Trefferquoten automatisch berechnen
+- Je Spiel nach Vierteln erfassen, Einsatzzeit per Uhr mitstoppen und „Starting 5“ festhalten
 - Jedes Spiel mit Datum, Mannschaft, Gegner, Heim/Auswärts und Art (Hauptrunde, Playoffs, Testspiel) speichern
 - Auswertung: Schnitt pro Spiel und Trefferquoten, getrennt nach Saison, Mannschaft, nach Hauptrunde, Playoffs und Testspielen sowie Heim und Auswärts
 - Saison beenden: neue Spiele zählen danach für die nächste Saison, alte Saisons bleiben auswertbar

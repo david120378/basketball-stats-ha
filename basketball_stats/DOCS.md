@@ -42,11 +42,14 @@ Reiter **Spiel erfassen**. Die Ansicht ist so gebaut, dass alle Schaltflächen o
 1. Die Zeile **Spieldaten** aufklappen, **Gegner** und **Datum** eintragen, **Heimspiel** oder **Auswärts** wählen. Zugeklappt zeigt die Zeile die Angaben als Zusammenfassung.
 2. Spielt der Spieler in mehreren Mannschaften: unter **Mannschaft** den Namen eintragen (z. B. „U14“) oder eine bereits verwendete Mannschaft antippen. Die Auswahl bleibt für das nächste Spiel stehen.
 3. Die Art des Spiels wählen: **Hauptrunde**, **Playoffs** oder **Testspiel**. Die Auswahl bleibt für das nächste Spiel stehen.
-4. Während des Spiels mittippen:
+4. Vor dem Anpfiff **Starting 5** antippen, wenn der Spieler in der Startformation steht.
+5. Während des Spiels mittippen:
+   - **Viertel**: Mit **1. V** bis **4. V** das laufende Viertel wählen. Alle Eingaben zählen für das gewählte Viertel; unter jedem Viertel stehen dessen Punkte.
+   - **Einsatzzeit**: Die Uhr-Schaltfläche antippen, wenn der Spieler aufs Feld kommt, und wieder antippen, wenn er ausgewechselt wird. Die Uhr zählt die tatsächlich vergangene Zeit – bei längeren Unterbrechungen also anhalten. Die Minuten lassen sich unter **Spieldaten** von Hand korrigieren.
    - **Würfe** (Freiwurf, 2er, 3er): **Treffer** oder **Fehlwurf** antippen. Punkte und Quoten rechnet die Seite selbst aus.
    - **Spielzüge**: Offensiv- und Defensiv-Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls durch Antippen der Kachel hochzählen.
-5. Vertippt? **Rückgängig** nimmt die letzte Eingabe zurück; mit **−** lässt sich jeder Wert einzeln korrigieren.
-6. Nach dem Spiel **Spiel speichern**. Das Spiel wandert in die Auswertung, die Eingabe ist wieder leer.
+6. Vertippt? **Rückgängig** nimmt die letzte Eingabe zurück; mit **−** lässt sich jeder Wert einzeln korrigieren.
+7. Nach dem Spiel **Spiel speichern**. Läuft die Uhr noch, wird sie dabei angehalten. Das Spiel wandert in die Auswertung, die Eingabe ist wieder leer.
 
 **Leeren** verwirft die laufende Eingabe. Zur Sicherheit muss die Schaltfläche zweimal angetippt werden.
 
@@ -65,8 +68,10 @@ Reiter **Auswertung**:
   - **Testspiele**: eigene, getrennte Statistik für Freundschafts- und Testspiele
 - **Schnitt pro Spiel** und **Trefferquoten** über die Spiele der gewählten Art.
 - Filter **Alle / Heim / Auswärts**.
+- **Minuten** und **Starting 5** stehen bei den Schnitten: durchschnittliche Einsatzzeit der Spiele mit erfasster Zeit und die Zahl der Starts.
+- **Nach Vierteln**: Punkte, Wurfquote, Rebounds und Assists je Viertel als Schnitt pro Spiel. Erscheint, sobald ein Spiel mit Vierteln erfasst wurde; ältere Spiele ohne Viertel zählen hier nicht mit.
 - **Verlauf**: Diagramme über den Zeitverlauf, ein Balken pro Spiel in zeitlicher Reihenfolge.
-  - Über die Auswahl-Schaltflächen legst du fest, welche Statistiken angezeigt werden: Punkte, Wurf-, Zweier-, Dreier- und Freiwurfquote, Rebounds (gesamt, offensiv, defensiv), Assists, Steals, Blocks, Ballverluste und Fouls. Jede gewählte Statistik bekommt ein eigenes Diagramm.
+  - Über die Auswahl-Schaltflächen legst du fest, welche Statistiken angezeigt werden: Punkte, Wurf-, Zweier-, Dreier- und Freiwurfquote, Rebounds (gesamt, offensiv, defensiv), Assists, Steals, Blocks, Ballverluste, Fouls und Einsatzzeit. Jede gewählte Statistik bekommt ein eigenes Diagramm.
   - Die gestrichelte Linie ist der Durchschnitt, der Wert steht oben rechts (Ø).
   - Einen Balken antippen (am Rechner: mit der Maus darüberfahren) zeigt Wert, Datum und Gegner dieses Spiels, bei Quoten zusätzlich Treffer/Versuche.
   - Der Filter Alle / Heim / Auswärts gilt auch für die Diagramme. Die Auswahl der Statistiken merkt sich das jeweilige Gerät.

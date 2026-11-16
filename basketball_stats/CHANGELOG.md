@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.9.0 – 2026-11-16
+
+- Neu: Viertel – beim Erfassen wird das laufende Viertel gewählt, alle Eingaben zählen für dieses Viertel; Auswertung „Nach Vierteln“
+- Neu: Einsatzzeit – Uhr zum Ein- und Auswechseln, in den Spieldaten korrigierbar; Minuten als Kachel, im Verlauf und im Vergleich
+- Neu: Schalter „Starting 5“ je Spiel; die Auswertung zeigt, wie oft der Spieler gestartet ist
+- CSV-Export um Minuten, Starting 5 und Punkte je Viertel erweitert
+- Ein Spiel lässt sich auch ohne Statistik speichern, wenn Einsatzzeit oder Starting 5 erfasst ist
+
 ## 1.8.0 – 2026-11-16
 
 - Neu: Saisons – eine Saison lässt sich beenden, neue Spiele zählen danach für die nächste Saison

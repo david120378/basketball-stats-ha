@@ -174,7 +174,7 @@ nav button{padding:0 4px}
 #viewCompare{padding-top:16px}
 .tblwrap{overflow-x:auto;padding:2px 0}
 .tblwrap table{border-collapse:collapse;width:100%;font-size:14px}
-.tblwrap th,.tblwrap td{padding:9px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tblwrap th,.tblwrap td{padding:9px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .tblwrap tr:last-child td{border-bottom:none}
 .tblwrap th:first-child,.tblwrap td:first-child{text-align:left;position:sticky;left:0;background:#2A3832;color:var(--mu);font-weight:600}
 .tblwrap thead th{color:var(--tx);font-weight:700}
@@ -187,6 +187,14 @@ nav button{padding:0 4px}
 .hb .tr i{display:block;height:100%;background:var(--gold);border-radius:0 4px 4px 0;min-width:2px}
 .hb .tr i.zero{background:var(--mu);opacity:.6}
 .hb .v{font:400 22px/1 'Instrument Serif',Georgia,serif;text-align:right;white-space:nowrap}
+/* Viertel, Einsatzzeit, Starting 5 */
+.qrow{display:flex;gap:8px}
+.qrow .seg{flex:2.1 1 0;min-height:42px;min-width:0}
+.qrow .seg button{padding:3px 0}
+.tbtn{flex:1 1 0;min-width:0;min-height:42px;border-radius:14px;border:1px solid var(--line2);background:transparent;color:var(--tx);font-size:12px;font-weight:700;padding:0 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbtn small{font-size:10px;color:var(--mu);font-weight:600;white-space:nowrap}
+.tbtn.on{background:var(--act);border-color:var(--gold);color:var(--gold)}
+.tbtn.on small{color:var(--gold)}
 .hidden{display:none!important}
 </style>
 </head>
@@ -231,6 +239,7 @@ nav button{padding:0 4px}
         <div class="field light" style="flex:1 1 160px"><label for="opp">Gegner</label><input id="opp" type="text" placeholder="z. B. TSV Rostock" autocomplete="off"></div>
         <div class="field light" style="flex:1 1 140px"><label for="gdate">Datum</label><input id="gdate" type="date"></div>
       </div>
+      <div class="field light"><label for="mins">Einsatzzeit in Minuten (wird von der Uhr gezählt, hier korrigierbar)</label><input id="mins" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
       <div class="seg" role="group" aria-label="Heim oder Auswärts">
         <button type="button" id="vHome" data-act="venue" data-v="home">Heimspiel</button>
         <button type="button" id="vAway" data-act="venue" data-v="away">Auswärts</button>
@@ -242,6 +251,11 @@ nav button{padding:0 4px}
       </div>
     </div>
   </details>
+  <div class="qrow">
+    <div class="seg two" id="qSeg" role="group" aria-label="Viertel auswählen"></div>
+    <button type="button" class="tbtn" id="tBtn" data-act="time"></button>
+    <button type="button" class="tbtn" id="stBtn" data-act="st"></button>
+  </div>
   <section id="shootSec" aria-label="Würfe"><div id="shooters"></div></section>
   <section id="countSec" aria-label="Spielzüge"><div id="counters"></div></section>
   <div class="foot">
@@ -278,6 +292,10 @@ nav button{padding:0 4px}
 
     <section aria-label="Schnitt pro Spiel"><h3>Schnitt pro Spiel</h3><div class="grid3" id="avgTiles"></div></section>
     <section aria-label="Trefferquoten"><h3>Trefferquoten</h3><div class="grid3" id="pctTiles"></div></section>
+    <section aria-label="Nach Vierteln" id="qSec"><h3>Nach Vierteln</h3>
+      <div class="card tblwrap"><table id="qTable"></table></div>
+      <p class="note" style="text-align:left" id="qNote"></p>
+    </section>
     <section aria-label="Saisonverlauf"><h3>Verlauf</h3>
       <div class="pick" id="chartPick" role="group" aria-label="Statistiken für den Verlauf auswählen"></div>
       <div id="charts" style="display:flex;flex-direction:column;gap:12px"></div>
@@ -350,7 +368,24 @@ nav button{padding:0 4px}
     return out.sort(function (a, b) { return a.localeCompare(b, 'de', { numeric: true }); });
   }
   var barSel = {}, TF = [];
-  var S = { snf:null, tmf:null, team:'', tfilter:'comp', type:'season', filter:'all', name:'', number:'', opp:'', date:'', venue:'home', editId:null, draft:null, tab:'game', game: blank(), undo:[], history:[] };
+  function blankQ() { return [blank(), blank(), blank(), blank()]; }
+  function normQ(q) {
+    var out = blankQ();
+    if (Array.isArray(q)) out.forEach(function (o, i) { if (q[i] && typeof q[i] === 'object') Object.keys(o).forEach(function (k) { o[k] = Math.max(0, Number(q[i][k]) || 0); }); });
+    return out;
+  }
+  function qAny(q) { return Array.isArray(q) && q.some(function (o) { return o && Object.keys(blank()).some(function (k) { return Number(o[k]) > 0; }); }); }
+  function clock(sec) { sec = Math.max(0, Math.floor(sec)); return pad(Math.floor(sec / 60)) + ':' + pad(sec % 60); }
+  // Laufendes Spiel: gewähltes Viertel (q), Werte je Viertel (gq), Einsatzzeit in Sekunden (sec), Zeitpunkt der Einwechslung (on), Starting 5 (st)
+  function curSec() { return S.sec + (S.on ? Math.max(0, (Date.now() - S.on) / 1000) : 0); }
+  function extra() { return { q: S.q, gq: S.gq, sec: S.sec, on: S.on, st: S.st }; }
+  function loadExtra(d) {
+    d = d || {};
+    S.q = Math.max(0, Math.min(3, Number(d.q) || 0)); S.gq = normQ(d.gq);
+    S.sec = Math.max(0, Number(d.sec) || 0); S.on = Number(d.on) || null; S.st = !!d.st;
+  }
+  function hasGame() { return total(S.game) > 0 || S.sec >= 1 || !!S.on || S.st; }
+  var S = { q:0, gq:blankQ(), sec:0, on:null, st:false, snf:null, tmf:null, team:'', tfilter:'comp', type:'season', filter:'all', name:'', number:'', opp:'', date:'', venue:'home', editId:null, draft:null, tab:'game', game: blank(), undo:[], history:[] };
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function today() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function normDate(x) { var m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(x || ''); return m ? m[3] + '-' + m[2] + '-' + m[1] : (x || today()); }
@@ -421,10 +456,10 @@ nav button{padding:0 4px}
     fetch('api/player/' + gone, { method:'DELETE' }).then(function (r) { setSync(r.ok ? 'Gespeichert' : 'Löschen nicht gespeichert'); })
       .catch(function () { setSync('Offline – Löschen nicht gespeichert'); });
   }
-  function cur() { return { id:P.pid, team:S.team, name:S.name, number:S.number, opp:S.opp, date:S.date, venue:S.venue, type:S.type, editId:S.editId, draft:S.draft, game:S.game, history:S.history }; }
+  function cur() { return { id:P.pid, q:S.q, gq:S.gq, sec:S.sec, on:S.on, st:S.st, team:S.team, name:S.name, number:S.number, opp:S.opp, date:S.date, venue:S.venue, type:S.type, editId:S.editId, draft:S.draft, game:S.game, history:S.history }; }
   function loadPlayer(d) {
     barSel = {};
-    S.team = tname(d);
+    S.team = tname(d); loadExtra(d);
     $('team').value = S.team;
     S.name = d.name || ''; S.number = d.number || ''; S.opp = d.opp || '';
     S.game = Object.assign(blank(), d.game || {});
@@ -541,37 +576,55 @@ nav button{padding:0 4px}
     if (pending()) push(); else pull(false);
   }, 4000);
 
-  function add(keys) { keys.forEach(function (k) { S.game[k] += 1; }); S.undo.push(keys); persist(); render(); }
+  function add(keys) {
+    keys.forEach(function (k) { S.game[k] += 1; S.gq[S.q][k] += 1; });
+    var e = keys.slice(); e.q = S.q; S.undo.push(e); persist(); render();
+  }
   function remove(keys) {
     var g = S.game, miss = keys.length === 1 && keys[0].charAt(2) === 'a' && /^(ft|p2|p3)a$/.test(keys[0]);
-    if (miss) { var base = keys[0].slice(0, -1); if (g[keys[0]] - g[base + 'm'] < 1) return; }
-    else if (keys.some(function (k) { return g[k] < 1; })) return;
+    var can = function (o) {
+      if (miss) { return o[keys[0]] - o[keys[0].slice(0, -1) + 'm'] >= 1; }
+      return !keys.some(function (k) { return o[k] < 1; });
+    };
+    if (!can(g)) return;
     keys.forEach(function (k) { g[k] -= 1; });
+    // im gewählten Viertel abziehen, sonst im letzten Viertel, das den Wert enthält
+    var qi = can(S.gq[S.q]) ? S.q : -1;
+    for (var j = 3; j >= 0 && qi < 0; j--) if (can(S.gq[j])) qi = j;
+    if (qi >= 0) keys.forEach(function (k) { S.gq[qi][k] -= 1; });
     for (var i = S.undo.length - 1; i >= 0; i--) {
       if (S.undo[i].join() === keys.join()) { S.undo.splice(i, 1); break; }
     }
     persist(); render();
   }
+  function clearGame() { S.game = blank(); S.gq = blankQ(); S.q = 0; S.sec = 0; S.on = null; S.st = false; S.undo = []; }
   var armed = false, armTimer = null;
   function reset() {
-    if (total(S.game) === 0) return;
+    if (!hasGame()) return;
     if (!armed) {
       armed = true; render();
       armTimer = setTimeout(function () { armed = false; render(); }, 4000);
       return;
     }
     clearTimeout(armTimer); armed = false;
-    S.game = blank(); S.undo = []; persist(); render();
+    clearGame(); persist(); render();
   }
   function undo() {
     var keys = S.undo.pop(); if (!keys) return;
-    keys.forEach(function (k) { S.game[k] = Math.max(0, S.game[k] - 1); });
+    var qi = typeof keys.q === 'number' ? keys.q : S.q;
+    keys.forEach(function (k) { S.game[k] = Math.max(0, S.game[k] - 1); S.gq[qi][k] = Math.max(0, S.gq[qi][k] - 1); });
+    persist(); render();
+  }
+  function toggleTime() {
+    if (S.on) { S.sec = curSec(); S.on = null; } else { S.on = Date.now(); }
     persist(); render();
   }
   function save() {
-    if (S.editId === null && total(S.game) === 0) return;
+    if (S.editId === null && !hasGame()) return;
     var rec = Object.assign({}, S.game, { id: S.editId !== null ? S.editId : Date.now(), date: S.date || today(), venue: S.venue, type: S.type, team: S.team.trim(), opp: S.opp.trim(),
-      sn: S.editId !== null ? gsn(S.history.filter(function (x) { return x.id === S.editId; })[0]) : curSn() });
+      sn: S.editId !== null ? gsn(S.history.filter(function (x) { return x.id === S.editId; })[0]) : curSn(),
+      sec: Math.round(curSec()), st: S.st });
+    if (qAny(S.gq)) rec.q = S.gq;
     if (S.editId !== null) {
       var found = false;
       S.history = S.history.map(function (x) { if (x.id === S.editId) { found = true; return rec; } return x; });
@@ -579,7 +632,7 @@ nav button{padding:0 4px}
       restoreDraft();
     } else {
       S.history.unshift(rec);
-      S.game = blank(); S.opp = ''; S.date = today(); S.venue = 'home';
+      clearGame(); S.opp = ''; S.date = today(); S.venue = 'home';
       $('opp').value = ''; $('gdate').value = S.date;
     }
     sortHistory(); S.undo = []; S.tab = 'season';
@@ -588,14 +641,16 @@ nav button{padding:0 4px}
   function restoreDraft() {
     var d = S.draft || { game: blank(), opp: '', date: today(), venue: 'home', type: S.type, team: S.team };
     S.game = Object.assign(blank(), d.game); S.opp = d.opp || ''; S.date = d.date || today(); S.venue = d.venue || 'home'; S.type = gtype(d); S.team = tname(d); $('team').value = S.team;
+    loadExtra(d);
     S.draft = null; S.editId = null; S.undo = [];
     $('opp').value = S.opp; $('gdate').value = S.date;
   }
   function startEdit(id) {
     var r = S.history.filter(function (x) { return x.id === id; })[0]; if (!r) return;
-    if (S.editId === null) S.draft = { game: S.game, opp: S.opp, date: S.date, venue: S.venue, type: S.type, team: S.team };
+    if (S.editId === null) S.draft = Object.assign({ game: S.game, opp: S.opp, date: S.date, venue: S.venue, type: S.type, team: S.team }, extra());
     S.editId = id; S.undo = [];
-    S.game = Object.assign(blank(), r); delete S.game.id; delete S.game.date; delete S.game.venue; delete S.game.opp; delete S.game.type; delete S.game.team; delete S.game.sn;
+    S.game = Object.assign(blank(), r); delete S.game.id; delete S.game.date; delete S.game.venue; delete S.game.opp; delete S.game.type; delete S.game.team; delete S.game.sn; delete S.game.q; delete S.game.sec; delete S.game.st;
+    S.q = 0; S.gq = normQ(r.q); S.sec = Math.max(0, Number(r.sec) || 0); S.on = null; S.st = !!r.st;
     S.opp = r.opp || ''; S.date = r.date; S.venue = r.venue || 'home'; S.type = gtype(r); S.team = tname(r); $('team').value = S.team;
     $('opp').value = S.opp; $('gdate').value = S.date;
     S.tab = 'game'; persist(); render();
@@ -619,14 +674,15 @@ nav button{padding:0 4px}
     var dec = function (v) { return String(Math.round(v * 10) / 10).replace('.', ','); };
     var pc = function (m, a) { return a ? dec(m / a * 100) : ''; };
     var q = function (v) { v = String(v); return /[;"\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
-    var head = ['Datum','Saison','Mannschaft','Heim/Auswärts','Art','Gegner','Punkte','FW Treffer','FW Versuche','FW %','2er Treffer','2er Versuche','2er %','3er Treffer','3er Versuche','3er %','Wurf Treffer','Wurf Versuche','Wurf %','Off. Rebounds','Def. Rebounds','Rebounds','Assists','Steals','Blocks','Ballverluste','Fouls'];
+    var head = ['Datum','Saison','Mannschaft','Heim/Auswärts','Art','Gegner','Punkte','FW Treffer','FW Versuche','FW %','2er Treffer','2er Versuche','2er %','3er Treffer','3er Versuche','3er %','Wurf Treffer','Wurf Versuche','Wurf %','Off. Rebounds','Def. Rebounds','Rebounds','Assists','Steals','Blocks','Ballverluste','Fouls','Minuten','Starting 5','Punkte 1. Viertel','Punkte 2. Viertel','Punkte 3. Viertel','Punkte 4. Viertel'];
     var cols = function (x, label, date, venue, opp, art, sais) {
       return [date, sais || '', label || '', venue, art || '', opp, pts(x), x.ftm, x.fta, pc(x.ftm, x.fta), x.p2m, x.p2a, pc(x.p2m, x.p2a), x.p3m, x.p3a, pc(x.p3m, x.p3a),
         x.p2m + x.p3m, x.p2a + x.p3a, pc(x.p2m + x.p3m, x.p2a + x.p3a), x.oreb, x.dreb, x.oreb + x.dreb, x.ast, x.stl, x.blk, x.tov, x.pf];
     };
     var rows = [head];
     list.forEach(function (x) {
-      rows.push(cols(x, tname(x), fmtDate(x.date), x.venue === 'home' ? 'Heim' : x.venue === 'away' ? 'Auswärts' : '', x.opp || '', TYPES[gtype(x)], M.seasons[gsn(x)]));
+      rows.push(cols(x, tname(x), fmtDate(x.date), x.venue === 'home' ? 'Heim' : x.venue === 'away' ? 'Auswärts' : '', x.opp || '', TYPES[gtype(x)], M.seasons[gsn(x)])
+        .concat([x.sec ? dec(x.sec / 60) : '', x.st ? 'Ja' : 'Nein'], Array.isArray(x.q) ? normQ(x.q).map(pts) : ['', '', '', '']));
     });
     var tot = blank(); list.forEach(function (x) { Object.keys(tot).forEach(function (k) { tot[k] += x[k]; }); });
     rows.push([]);
@@ -666,13 +722,14 @@ nav button{padding:0 4px}
   function normRec(x, id) {
     var r = blank(); Object.keys(r).forEach(function (k) { r[k] = num(x[k]); });
     r.id = id; r.date = normDate(x.date); r.venue = x.venue === 'away' ? 'away' : (x.venue === 'home' ? 'home' : ''); r.opp = String(x.opp || '').trim(); r.type = gtype(x); r.team = tname(x); r.sn = Math.max(0, Number(x.sn) || 0);
+    r.sec = Math.max(0, Math.round(Number(x.sec) || 0)); r.st = !!x.st; if (qAny(x.q)) r.q = normQ(x.q);
     return r;
   }
   function sig(r) { return [r.date, Number(r.sn) || 0, r.venue, gtype(r), tname(r), r.opp].concat(Object.keys(blank()).map(function (k) { return r[k]; })).join('|'); }
   function recsFromCsv(text) {
     var rows = parseCsv(text), head = (rows[0] || []).map(function (h) { return h.trim().toLowerCase(); });
     var map = { 'datum':'date','saison':'snName','mannschaft':'team','heim/auswärts':'venue','art':'type','gegner':'opp','fw treffer':'ftm','fw versuche':'fta','2er treffer':'p2m','2er versuche':'p2a',
-      '3er treffer':'p3m','3er versuche':'p3a','off. rebounds':'oreb','def. rebounds':'dreb','assists':'ast','steals':'stl','blocks':'blk','ballverluste':'tov','fouls':'pf' };
+      '3er treffer':'p3m','3er versuche':'p3a','off. rebounds':'oreb','def. rebounds':'dreb','assists':'ast','steals':'stl','blocks':'blk','ballverluste':'tov','fouls':'pf','minuten':'mins','starting 5':'start' };
     var idx = {}; head.forEach(function (h, i) { if (map[h]) idx[map[h]] = i; });
     if (idx.date === undefined) throw new Error('Spalte „Datum“ fehlt – ist das eine Export-Datei dieser Seite?');
     var out = [];
@@ -680,7 +737,8 @@ nav button{padding:0 4px}
       var ds = (r[idx.date] || '').trim();
       if (!/^(\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})$/.test(ds)) return;
       var si = idx.snName === undefined ? -1 : M.seasons.indexOf(String(r[idx.snName] || '').trim());
-      var x = { date: ds, sn: si < 0 ? curSn() : si, team: idx.team === undefined ? '' : (r[idx.team] || ''), opp: r[idx.opp] || '', venue: /^heim/i.test(r[idx.venue] || '') ? 'home' : /^ausw/i.test(r[idx.venue] || '') ? 'away' : '',
+      var x = { date: ds, sec: idx.mins === undefined ? 0 : Math.round((Number(String(r[idx.mins] || '').replace(',', '.')) || 0) * 60),
+        st: idx.start !== undefined && /^(ja|x|1|true)/i.test(String(r[idx.start] || '').trim()), sn: si < 0 ? curSn() : si, team: idx.team === undefined ? '' : (r[idx.team] || ''), opp: r[idx.opp] || '', venue: /^heim/i.test(r[idx.venue] || '') ? 'home' : /^ausw/i.test(r[idx.venue] || '') ? 'away' : '',
         type: /^play/i.test(r[idx.type] || '') ? 'playoff' : /^(test|freund)/i.test(r[idx.type] || '') ? 'friendly' : 'season' };
       Object.keys(blank()).forEach(function (k) { x[k] = idx[k] === undefined ? 0 : r[idx[k]]; });
       out.push(x);
@@ -753,7 +811,8 @@ nav button{padding:0 4px}
     ['stl', 'Steals', 'Steals', cnt1('stl')],
     ['blk', 'Blocks', 'Blocks', cnt1('blk')],
     ['tov', 'Ballverluste', 'Ballverluste', cnt1('tov')],
-    ['pf', 'Fouls', 'Fouls', cnt1('pf')]
+    ['pf', 'Fouls', 'Fouls', cnt1('pf')],
+    ['min', 'Einsatzzeit (Minuten)', 'Minuten', function (x) { return x.sec ? Math.round(x.sec / 6) / 10 : null; }]
   ];
   var chartSel = ['pts', 'fg', 'reb'];
   try {
@@ -780,13 +839,14 @@ nav button{padding:0 4px}
       var sm = 0, sa = 0; list.forEach(function (x) { sm += c[3](x); sa += c[4](x); });
       mean = sa ? sm / sa * 100 : null; meanTxt = mean === null ? '–' : Math.round(mean) + ' %'; max = 100;
     } else {
-      mean = vals.reduce(function (a, v) { return a + v; }, 0) / n; meanTxt = f1(mean);
-      max = niceMax(Math.max.apply(null, vals));
+      var nn = vals.filter(function (v) { return v !== null; });
+      mean = nn.length ? nn.reduce(function (a, v) { return a + v; }, 0) / nn.length : null; meanTxt = mean === null ? '–' : f1(mean);
+      max = niceMax(Math.max.apply(null, nn.concat([0])));
     }
     var L = 4, R = 316, T = 16, B = 108, slot = (R - L) / n, bw = Math.max(1.5, Math.min(26, slot - 2));
     var sel = 0; list.forEach(function (x, i) { if (x.id === barSel[c[0]]) sel = i; });
     if (barSel[c[0]] === undefined || !list.some(function (x) { return x.id === barSel[c[0]]; })) sel = n - 1;
-    var fmt = function (v) { return v === null ? 'kein Versuch' : isPct ? Math.round(v) + ' %' : String(v); };
+    var fmt = function (v) { return v === null ? (isPct ? 'kein Versuch' : 'nicht erfasst') : isPct ? Math.round(v) + ' %' : (v % 1 ? f1(v) : String(v)); };
     var info = function (x) {
       var v = x.venue === 'away' ? 'Auswärts' : (x.venue === 'home' ? 'Heim' : '');
       var t = fmtDate(x.date) + (tname(x) && S.tmf === null ? ' · ' + tname(x) : '') + (gtype(x) !== 'season' ? ' · ' + TYPES[gtype(x)] : '') + (v ? ' · ' + v : '') + (x.opp ? ' · gegen ' + x.opp : '');
@@ -874,8 +934,8 @@ nav button{padding:0 4px}
       var v = {};
       CHARTS.forEach(function (c) {
         if (!list.length) { v[c[0]] = null; return; }
-        var m = 0, a = 0; list.forEach(function (r) { m += c[3](r); if (c[4]) a += c[4](r); });
-        v[c[0]] = c[4] ? (a ? m / a * 100 : null) : m / list.length;
+        var m = 0, a = 0, k = 0; list.forEach(function (r) { var w = c[3](r); if (w === null) return; m += w; k++; if (c[4]) a += c[4](r); });
+        v[c[0]] = c[4] ? (a ? m / a * 100 : null) : (k ? m / k : null);
       });
       return { p: x, n: list.length, v: v };
     });
@@ -935,7 +995,7 @@ nav button{padding:0 4px}
     $('delPlayer').className = 'reset' + (delArmed ? ' arm' : '') + (P.list.length < 2 ? ' hidden' : '');
     $('delPlayer').textContent = delArmed ? '„' + pl({ name: S.name, number: S.number }) + '“ mit allen Spielen löschen? Nochmal tippen' : 'Diesen Spieler löschen';
     var editing = S.editId !== null;
-    $('save').disabled = !editing && total(g) === 0;
+    $('save').disabled = !editing && !hasGame();
     $('save').textContent = editing ? 'Änderungen speichern' : 'Spiel speichern';
     $('banner').classList.toggle('hidden', !editing);
     var er = h.filter(function (x) { return x.id === S.editId; })[0];
@@ -947,7 +1007,19 @@ nav button{padding:0 4px}
     });
     $('vHome').setAttribute('aria-pressed', S.venue === 'home');
     $('vAway').setAttribute('aria-pressed', S.venue === 'away');
-    $('reset').disabled = total(g) === 0;
+    $('reset').disabled = !hasGame();
+    $('qSeg').innerHTML = S.gq.map(function (o, i) {
+      var on = S.q === i;
+      return '<button type="button" data-act="q" data-v="' + i + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '" aria-label="' + (i + 1) + '. Viertel, ' + pts(o) + ' Punkte">' + (i + 1) + '. V<small>' + pts(o) + ' Pkt</small></button>';
+    }).join('');
+    $('tBtn').className = 'tbtn' + (S.on ? ' on' : '');
+    $('tBtn').innerHTML = '<span id="tClock">' + clock(curSec()) + '</span><small>' + (S.on ? 'auf dem Feld' : 'einwechseln') + '</small>';
+    $('tBtn').setAttribute('aria-pressed', !!S.on);
+    $('tBtn').setAttribute('aria-label', 'Einsatzzeit ' + clock(curSec()) + (S.on ? ', läuft – antippen zum Auswechseln' : ', steht – antippen zum Einwechseln'));
+    $('stBtn').className = 'tbtn' + (S.st ? ' on' : '');
+    $('stBtn').innerHTML = '<span>' + (S.st ? '✓ ' : '') + 'Starting 5</span><small>' + (S.st ? 'ja' : 'nein') + '</small>';
+    $('stBtn').setAttribute('aria-pressed', S.st);
+    if (document.activeElement !== $('mins')) $('mins').value = curSec() >= 1 ? String(Math.round(curSec() / 6) / 10).replace('.', ',') : '';
     $('reset').className = 'reset' + (armed ? ' arm' : '');
     $('reset').textContent = armed ? 'Sicher?' : 'Leeren';
     $('reset').setAttribute('aria-label', armed ? 'Wirklich alles leeren? Nochmal tippen' : 'Aktuelles Spiel leeren');
@@ -1029,10 +1101,23 @@ nav button{padding:0 4px}
     var avg = function (fn) { return n ? f1(sum(fn) / n) : '–'; };
     var fgm = function (x) { return x.p2m + x.p3m; }, fga = function (x) { return x.p2a + x.p3a; };
     var tiles = function (arr, cls) { return arr.map(function (t) { return '<div class="card stat ' + cls + '"><span>' + t[0] + '</span><b>' + t[1] + '</b></div>'; }).join(''); };
+    var timed = h.filter(function (x) { return x.sec > 0; });
+    var starts = h.filter(function (x) { return x.st; }).length;
     $('avgTiles').innerHTML = tiles([
       ['Punkte', avg(pts)], ['Rebounds', avg(function (x) { return x.oreb + x.dreb; })], ['Assists', avg(function (x) { return x.ast; })],
-      ['Steals', avg(function (x) { return x.stl; })], ['Blocks', avg(function (x) { return x.blk; })], ['Ballverluste', avg(function (x) { return x.tov; })]
+      ['Steals', avg(function (x) { return x.stl; })], ['Blocks', avg(function (x) { return x.blk; })], ['Ballverluste', avg(function (x) { return x.tov; })],
+      ['Minuten', timed.length ? f1(timed.reduce(function (a, x) { return a + x.sec; }, 0) / 60 / timed.length) : '–'], ['Starting 5', n ? starts + '/' + n : '–']
     ], '');
+    var qg = h.filter(function (x) { return Array.isArray(x.q); }).map(function (x) { return normQ(x.q); });
+    $('qSec').classList.toggle('hidden', !qg.length);
+    if (qg.length) {
+      $('qTable').innerHTML = '<thead><tr><th>Viertel</th><th>Punkte</th><th>Wurf</th><th>Reb.</th><th>Ast.</th></tr></thead><tbody>' + [0, 1, 2, 3].map(function (i) {
+        var t = blank(); qg.forEach(function (q) { Object.keys(t).forEach(function (k) { t[k] += q[i][k]; }); });
+        var per = function (v) { return f1(v / qg.length); };
+        return '<tr><td>' + (i + 1) + '. Viertel</td><td>' + per(pts(t)) + '</td><td>' + pct(t.p2m + t.p3m, t.p2a + t.p3a) + '</td><td>' + per(t.oreb + t.dreb) + '</td><td>' + per(t.ast) + '</td></tr>';
+      }).join('') + '</tbody>';
+      $('qNote').textContent = 'Schnitt pro Spiel aus ' + qg.length + (qg.length === 1 ? ' Spiel' : ' Spielen') + ' mit Viertel-Erfassung' + (qg.length < n ? ' (von ' + n + ')' : '') + '.';
+    }
     $('pctTiles').innerHTML = tiles([
       ['Wurf', pct(sum(fgm), sum(fga))], ['Dreier', pct(sum(function (x) { return x.p3m; }), sum(function (x) { return x.p3a; }))],
       ['Freiwurf', pct(sum(function (x) { return x.ftm; }), sum(function (x) { return x.fta; }))]
@@ -1044,7 +1129,14 @@ nav button{padding:0 4px}
       return '<div class="card game"><div class="p"><b>' + pts(x) + '</b><span>PKT</span></div><div class="i"><strong>' + title +
         ' <em>· ' + esc(fmtDate(x.date)) + '</em></strong>' +
         '<span>REB ' + (x.oreb + x.dreb) + ' · AST ' + x.ast + ' · STL ' + x.stl + ' · BLK ' + x.blk + ' · TO ' + x.tov + '</span>' +
-        '<span>Wurf ' + fgm(x) + '/' + fga(x) + ' · 3er ' + x.p3m + '/' + x.p3a + ' · FW ' + x.ftm + '/' + x.fta + '</span></div>' +
+        '<span>Wurf ' + fgm(x) + '/' + fga(x) + ' · 3er ' + x.p3m + '/' + x.p3a + ' · FW ' + x.ftm + '/' + x.fta + '</span>' +
+        (function () {
+          var e = [];
+          if (Array.isArray(x.q)) e.push('Viertel ' + normQ(x.q).map(pts).join(' · '));
+          if (x.sec > 0) e.push(clock(x.sec) + ' Min');
+          if (x.st) e.push('Starting 5');
+          return e.length ? '<span>' + e.join(' · ') + '</span>' : '';
+        })() + '</div>' +
         '<div class="acts"><button type="button" class="edit" data-act="edit" data-id="' + x.id + '" aria-label="Spiel vom ' + esc(fmtDate(x.date)) + ' bearbeiten">' + PENCIL + '</button>' +
         '<button type="button" class="del" data-act="del" data-id="' + x.id + '" aria-label="Spiel vom ' + esc(fmtDate(x.date)) + ' löschen">' + TRASH + '</button></div></div>';
     }).join('');
@@ -1065,6 +1157,9 @@ nav button{padding:0 4px}
     else if (a === 'cancel') cancelEdit();
     else if (a === 'team') { S.team = b.getAttribute('data-v'); $('team').value = S.team; persist(); render(); }
     else if (a === 'tmf') { var e2 = TF[Number(b.getAttribute('data-i'))]; S.tmf = e2 ? e2[0] : null; render(); }
+    else if (a === 'q') { S.q = Number(b.getAttribute('data-v')) || 0; persist(); render(); }
+    else if (a === 'time') toggleTime();
+    else if (a === 'st') { S.st = !S.st; persist(); render(); }
     else if (a === 'cmpp') { var ci = Number(b.getAttribute('data-id')); if (cmpOff[ci]) delete cmpOff[ci]; else cmpOff[ci] = true; render(); }
     else if (a === 'snf') { var sv = b.getAttribute('data-v'); S.snf = sv === 'all' ? 'all' : Number(sv); render(); }
     else if (a === 'snend') endSeason();
@@ -1098,6 +1193,13 @@ nav button{padding:0 4px}
     rd.readAsText(f);
   });
   $('gdate').addEventListener('change', function (e) { S.date = e.target.value || today(); persist(); });
+  $('mins').addEventListener('input', function (e) {
+    var v = Number(String(e.target.value).replace(',', '.'));
+    if (!isFinite(v) || v < 0) return;
+    S.sec = Math.round(v * 60); if (S.on) S.on = Date.now();
+    persist(); render();
+  });
+  setInterval(function () { if (S.on && S.tab === 'game') { var t = $('tClock'); if (t) t.textContent = clock(curSec()); } }, 1000);
   $('snNew').addEventListener('input', function (e) { snDraft = e.target.value; });
   $('team').addEventListener('input', function (e) { S.team = e.target.value; persist(); render(); });
   $('opp').addEventListener('input', function (e) { S.opp = e.target.value; persist(); });
