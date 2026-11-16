@@ -1,10 +1,10 @@
 # Basketball-Stats
 
-Mit diesem Add-on erfasst du die Statistiken eines Basketballspielers Spiel für Spiel – direkt am Spielfeldrand auf dem Handy – und wertest sie über die Saison aus. Die Seite läuft in Home Assistant und ist nur darüber erreichbar.
+Mit dieser App erfasst du die Statistiken eines Basketballspielers Spiel für Spiel – direkt am Spielfeldrand auf dem Handy – und wertest sie über die Saison aus. Die Seite läuft in Home Assistant und ist nur darüber erreichbar.
 
 ## Erste Schritte
 
-1. Add-on installieren und **Starten**. „Beim Booten starten“ ist bereits aktiv.
+1. App installieren und **Starten**. „Beim Booten starten“ ist bereits aktiv.
 2. Optional **In der Seitenleiste anzeigen** einschalten – dann erscheint der Eintrag **Basketball**.
 3. Die Seite über die Seitenleiste oder über **Benutzeroberfläche öffnen** aufrufen.
 4. Oben **Spieler** und **Nummer** eintragen. Beides bleibt gespeichert.
@@ -46,10 +46,10 @@ Daten aus einer älteren Installation übernimmst du so: dort **Sicherung (JSON)
 
 ## Datenspeicherung und Zugriff
 
-- Die Daten liegen im Add-on-Speicher (`/data/data.json`) und sind in jedem Home-Assistant-Backup enthalten.
-- Das Add-on öffnet keinen Port nach außen. Es beantwortet nur Anfragen, die über Home Assistant (Ingress) kommen; wer Home Assistant nicht nutzen darf, kommt nicht auf die Seite.
+- Die Daten liegen im App-Speicher (`/data/data.json`) und sind in jedem Home-Assistant-Backup enthalten.
+- Die App öffnet keinen Port nach außen. Sie beantwortet nur Anfragen, die über Home Assistant (Ingress) kommen; wer Home Assistant nicht nutzen darf, kommt nicht auf die Seite.
 - Alle Home-Assistant-Benutzer können die Seite öffnen, nicht nur Administratoren.
 
 ## Updates
 
-Neue Versionen erscheinen im Add-on-Store als Update. Was sich geändert hat, steht im Reiter **Änderungsprotokoll** (Datei `CHANGELOG.md`).
+Neue Versionen erscheinen im App-Store als Update. Was sich geändert hat, steht im Reiter **Änderungsprotokoll** (Datei `CHANGELOG.md`).

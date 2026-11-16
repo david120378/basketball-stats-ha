@@ -1,6 +1,6 @@
-# Basketball-Stats – Home-Assistant-Add-on
+# Basketball-Stats – Home-Assistant-App
 
-Ein Add-on für Home Assistant, mit dem du die Statistiken eines Basketballspielers Spiel für Spiel erfasst und über die Saison auswertest. Gedacht für das Mittippen am Spielfeldrand auf dem Handy; die Auswertung funktioniert genauso am Rechner.
+Eine App für Home Assistant (früher „Add-on“), mit der du die Statistiken eines Basketballspielers Spiel für Spiel erfasst und über die Saison auswertest. Gedacht für das Mittippen am Spielfeldrand auf dem Handy; die Auswertung funktioniert genauso am Rechner.
 
 **Was es kann**
 
@@ -13,9 +13,9 @@ Ein Add-on für Home Assistant, mit dem du die Statistiken eines Basketballspiel
 
 ## Installation
 
-Voraussetzung: Home Assistant OS oder Supervised (Add-ons werden unterstützt), Architektur `amd64` oder `aarch64`.
+Voraussetzung: Home Assistant OS oder Supervised (Apps werden unterstützt), Architektur `amd64` oder `aarch64`.
 
-1. In Home Assistant **Einstellungen → Add-ons → Add-on-Store** öffnen (in neueren Versionen heißt der Bereich **Apps**).
+1. In Home Assistant **Einstellungen → Apps** öffnen und dort den App-Store aufrufen (vor Version 2026.2: **Add-ons → Add-on-Store**).
 2. Oben rechts im Menü **⋮ → Repositories** wählen und diese URL hinzufügen:
 
    ```
@@ -32,11 +32,11 @@ Voraussetzung: Home Assistant OS oder Supervised (Add-ons werden unterstützt), 
 3. Nach dem Spiel **Spiel speichern**.
 4. Im Reiter **Saison** Schnitt, Quoten und alle Spiele ansehen, Spiele bearbeiten oder löschen, exportieren und importieren.
 
-Die ausführliche Anleitung steht in [basketball_stats/DOCS.md](basketball_stats/DOCS.md) und in Home Assistant im Reiter **Dokumentation** des Add-ons.
+Die ausführliche Anleitung steht in [basketball_stats/DOCS.md](basketball_stats/DOCS.md) und in Home Assistant im Reiter **Dokumentation** der App.
 
 ## Versionierung
 
-Das Add-on folgt [Semantic Versioning](https://semver.org/lang/de/) (`MAJOR.MINOR.PATCH`):
+Die App folgt [Semantic Versioning](https://semver.org/lang/de/) (`MAJOR.MINOR.PATCH`):
 
 | Stelle | Wann erhöhen | Beispiel |
 | --- | --- | --- |
@@ -56,8 +56,8 @@ Aktuelle Version: siehe [config.yaml](basketball_stats/config.yaml), Verlauf im 
 
 | Pfad | Inhalt |
 | --- | --- |
-| `repository.yaml` | Kennzeichnet das Repository als Add-on-Repository |
-| `basketball_stats/config.yaml` | Add-on-Konfiguration inkl. Version |
+| `repository.yaml` | Kennzeichnet das Repository als App-Repository |
+| `basketball_stats/config.yaml` | App-Konfiguration inkl. Version |
 | `basketball_stats/Dockerfile` | Container-Image (Node 20) |
 | `basketball_stats/server.js` | Kleiner Server ohne Abhängigkeiten: liefert die Seite aus und speichert die Daten |
 | `basketball_stats/index.html` | Die Seite selbst |

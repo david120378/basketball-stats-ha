@@ -1,6 +1,10 @@
 # Änderungsprotokoll
 
-Alle nennenswerten Änderungen am Add-on. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
+Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
+
+## 1.0.2 – 2026-11-16
+
+- Bezeichnungen an Home Assistant 2026.2 angepasst: „Add-on“ heißt jetzt „App“ (README, Anleitung, Repository-Name)
 
 ## 1.0.1 – 2026-11-16
 
