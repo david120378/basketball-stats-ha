@@ -6,9 +6,9 @@ Eine App für Home Assistant (früher „Add-on“), mit der du die Statistiken 
 
 - Würfe erfassen (Freiwurf, 2er, 3er – Treffer und Fehlwürfe), dazu Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls
 - Punkte und Trefferquoten automatisch berechnen
-- Jedes Spiel mit Datum, Gegner und Heim/Auswärts speichern
-- Saison-Auswertung: Schnitt pro Spiel, Trefferquoten, Filter nach Heim und Auswärts
-- Verlaufsdiagramme über die Saison – die angezeigten Statistiken sind frei wählbar
+- Jedes Spiel mit Datum, Gegner, Heim/Auswärts und Art (Saison, Playoffs, Testspiel) speichern
+- Auswertung: Schnitt pro Spiel und Trefferquoten, getrennt nach Saison, Playoffs und Testspielen sowie Heim und Auswärts
+- Verlaufsdiagramme – die angezeigten Statistiken sind frei wählbar
 - Export als CSV (für Excel/Numbers) und als JSON-Sicherung, Import beider Formate
 - Nur über Home Assistant erreichbar – kein offener Port, Daten im Home-Assistant-Backup
 
@@ -29,9 +29,9 @@ Voraussetzung: Home Assistant OS oder Supervised (Apps werden unterstützt), Arc
 ## Benutzung in Kürze
 
 1. Seite über die Seitenleiste öffnen, **Spieler** und **Nummer** eintragen.
-2. Im Reiter **Spiel erfassen** Gegner, Datum und Heim/Auswärts setzen und während des Spiels Würfe und Spielzüge antippen. **Rückgängig** korrigiert die letzte Eingabe.
+2. Im Reiter **Spiel erfassen** Gegner, Datum, Heim/Auswärts und die Art des Spiels setzen und während des Spiels Würfe und Spielzüge antippen. **Rückgängig** korrigiert die letzte Eingabe.
 3. Nach dem Spiel **Spiel speichern**.
-4. Im Reiter **Saison** Schnitt, Quoten, Verlaufsdiagramme und alle Spiele ansehen, Spiele bearbeiten oder löschen, exportieren und importieren.
+4. Im Reiter **Auswertung** die Spielart wählen und Schnitt, Quoten, Verlaufsdiagramme und alle Spiele ansehen, Spiele bearbeiten oder löschen, exportieren und importieren.
 
 Die ausführliche Anleitung steht in [basketball_stats/DOCS.md](basketball_stats/DOCS.md) und in Home Assistant im Reiter **Dokumentation** der App.
 

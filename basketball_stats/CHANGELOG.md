@@ -2,6 +2,13 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.2.0 – 2026-11-16
+
+- Neu: Art des Spiels – jedes Spiel wird als Saison, Playoffs oder Testspiel erfasst
+- Auswertung getrennt nach Gesamt (Saison + Playoffs), Saison, Playoffs und Testspiele; Testspiele fließen nicht in „Gesamt“ ein
+- Reiter „Saison“ heißt jetzt „Auswertung“
+- CSV-Export und -Import um die Spalte „Art“ erweitert; bereits gespeicherte Spiele zählen als Saison
+
 ## 1.1.0 – 2026-11-16
 
 - Neu: Verlauf in der Saison-Ansicht – je ausgewählter Statistik ein Diagramm mit einem Balken pro Spiel und Durchschnittslinie

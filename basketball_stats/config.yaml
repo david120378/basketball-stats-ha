@@ -1,5 +1,5 @@
 name: Basketball-Stats
-version: "1.1.0"
+version: "1.2.0"
 slug: basketball_stats
 description: Basketball-Statistiken erfassen – nur über Home Assistant erreichbar
 arch:

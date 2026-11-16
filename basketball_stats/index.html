@@ -109,6 +109,8 @@ section{display:flex;flex-direction:column;gap:12px}
 .chart text{fill:var(--mu);font:600 10px 'Public Sans',system-ui,sans-serif}
 .chart .read{margin:0;font-size:13px;color:var(--mu);min-height:18px}
 .chart .read strong{color:var(--tx);font-size:15px}
+.seg.two button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 2px;font-size:14px;min-width:0}
+.seg.two button small{font-size:11px;font-weight:600;opacity:.85}
 .hidden{display:none!important}
 </style>
 </head>
@@ -137,7 +139,7 @@ section{display:flex;flex-direction:column;gap:12px}
 
 <nav aria-label="Ansicht">
   <button type="button" id="tabGame" data-act="tab" data-v="game">Spiel erfassen</button>
-  <button type="button" id="tabSeason" data-act="tab" data-v="season">Saison</button>
+  <button type="button" id="tabSeason" data-act="tab" data-v="season">Auswertung</button>
 </nav>
 
 <main id="viewGame">
@@ -155,6 +157,11 @@ section{display:flex;flex-direction:column;gap:12px}
       <button type="button" id="vAway" data-act="venue" data-v="away">Auswärts</button>
     </div>
   </div>
+  <div class="seg" role="group" aria-label="Art des Spiels">
+    <button type="button" id="tSeason" data-act="gtype" data-v="season">Saison</button>
+    <button type="button" id="tPlayoff" data-act="gtype" data-v="playoff">Playoffs</button>
+    <button type="button" id="tFriendly" data-act="gtype" data-v="friendly">Testspiel</button>
+  </div>
   <section aria-label="Würfe"><h2>Würfe</h2><div id="shooters" style="display:flex;flex-direction:column;gap:12px"></div></section>
   <section aria-label="Weitere Statistiken"><h2>Spielzüge</h2><div class="grid2" id="counters"></div></section>
   <button type="button" class="save" id="save" data-act="save">Spiel speichern</button>
@@ -164,6 +171,13 @@ section{display:flex;flex-direction:column;gap:12px}
 
 <main id="viewSeason" class="hidden">
   <div class="who"><h2 id="playerTitle"></h2><span id="gamesLabel"></span></div>
+  <div class="seg two" role="group" aria-label="Art der Spiele auswählen">
+    <button type="button" id="sComp" data-act="tfilter" data-v="comp"></button>
+    <button type="button" id="sSeason" data-act="tfilter" data-v="season"></button>
+    <button type="button" id="sPlayoff" data-act="tfilter" data-v="playoff"></button>
+    <button type="button" id="sFriendly" data-act="tfilter" data-v="friendly"></button>
+  </div>
+  <p class="note" style="text-align:left">„Gesamt“ zählt Saison und Playoffs zusammen. Testspiele laufen getrennt und fließen dort nicht ein.</p>
   <div class="seg" role="group" aria-label="Spiele filtern">
     <button type="button" id="fAll" data-act="filter" data-v="all"></button>
     <button type="button" id="fHome" data-act="filter" data-v="home"></button>
@@ -198,7 +212,10 @@ section{display:flex;flex-direction:column;gap:12px}
   var PENCIL = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/><path d="M14 7l3 3"/></svg>';
   var $ = function (id) { return document.getElementById(id); };
   var blank = function () { return { ftm:0, fta:0, p2m:0, p2a:0, p3m:0, p3a:0, oreb:0, dreb:0, ast:0, stl:0, blk:0, tov:0, pf:0 }; };
-  var S = { filter:'all', name:'', number:'', opp:'', date:'', venue:'home', editId:null, draft:null, tab:'game', game: blank(), undo:[], history:[] };
+  var TYPES = { season:'Saison', playoff:'Playoffs', friendly:'Testspiel' };
+  function gtype(x) { var t = x && x.type; return t === 'playoff' || t === 'friendly' ? t : 'season'; }
+  function inType(x) { var t = gtype(x); return S.tfilter === 'comp' ? t !== 'friendly' : t === S.tfilter; }
+  var S = { tfilter:'comp', type:'season', filter:'all', name:'', number:'', opp:'', date:'', venue:'home', editId:null, draft:null, tab:'game', game: blank(), undo:[], history:[] };
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function today() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function normDate(x) { var m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(x || ''); return m ? m[3] + '-' + m[2] + '-' + m[1] : (x || today()); }
@@ -212,14 +229,14 @@ section{display:flex;flex-direction:column;gap:12px}
   function pct(m, a) { return a ? Math.round(m / a * 100) + ' %' : '–'; }
   function f1(x) { return (Math.round(x * 10) / 10).toFixed(1).replace('.', ','); }
 
-  function payload() { return { name:S.name, number:S.number, opp:S.opp, date:S.date, venue:S.venue, editId:S.editId, draft:S.draft, game:S.game, history:S.history }; }
+  function payload() { return { name:S.name, number:S.number, opp:S.opp, date:S.date, venue:S.venue, type:S.type, editId:S.editId, draft:S.draft, game:S.game, history:S.history }; }
   function apply(d) {
     S.name = d.name || ''; S.number = d.number || ''; S.opp = d.opp || '';
     S.game = Object.assign(blank(), d.game || {});
-    S.date = d.date || today(); S.venue = d.venue === 'away' ? 'away' : 'home';
+    S.date = d.date || today(); S.venue = d.venue === 'away' ? 'away' : 'home'; S.type = gtype(d);
     S.editId = d.editId || null; S.draft = d.draft || null;
     S.history = (Array.isArray(d.history) ? d.history : []).map(function (x) {
-      return Object.assign({}, x, { date: normDate(x.date), venue: x.venue === 'away' ? 'away' : (x.venue === 'home' ? 'home' : '') });
+      return Object.assign({}, x, { date: normDate(x.date), venue: x.venue === 'away' ? 'away' : (x.venue === 'home' ? 'home' : ''), type: gtype(x) });
     });
     sortHistory();
     S.undo = [];
@@ -277,7 +294,7 @@ section{display:flex;flex-direction:column;gap:12px}
   }
   function save() {
     if (S.editId === null && total(S.game) === 0) return;
-    var rec = Object.assign({}, S.game, { id: S.editId !== null ? S.editId : Date.now(), date: S.date || today(), venue: S.venue, opp: S.opp.trim() });
+    var rec = Object.assign({}, S.game, { id: S.editId !== null ? S.editId : Date.now(), date: S.date || today(), venue: S.venue, type: S.type, opp: S.opp.trim() });
     if (S.editId !== null) {
       var found = false;
       S.history = S.history.map(function (x) { if (x.id === S.editId) { found = true; return rec; } return x; });
@@ -292,17 +309,17 @@ section{display:flex;flex-direction:column;gap:12px}
     persist(); render();
   }
   function restoreDraft() {
-    var d = S.draft || { game: blank(), opp: '', date: today(), venue: 'home' };
-    S.game = Object.assign(blank(), d.game); S.opp = d.opp || ''; S.date = d.date || today(); S.venue = d.venue || 'home';
+    var d = S.draft || { game: blank(), opp: '', date: today(), venue: 'home', type: S.type };
+    S.game = Object.assign(blank(), d.game); S.opp = d.opp || ''; S.date = d.date || today(); S.venue = d.venue || 'home'; S.type = gtype(d);
     S.draft = null; S.editId = null; S.undo = [];
     $('opp').value = S.opp; $('gdate').value = S.date;
   }
   function startEdit(id) {
     var r = S.history.filter(function (x) { return x.id === id; })[0]; if (!r) return;
-    if (S.editId === null) S.draft = { game: S.game, opp: S.opp, date: S.date, venue: S.venue };
+    if (S.editId === null) S.draft = { game: S.game, opp: S.opp, date: S.date, venue: S.venue, type: S.type };
     S.editId = id; S.undo = [];
-    S.game = Object.assign(blank(), r); delete S.game.id; delete S.game.date; delete S.game.venue; delete S.game.opp;
-    S.opp = r.opp || ''; S.date = r.date; S.venue = r.venue || 'home';
+    S.game = Object.assign(blank(), r); delete S.game.id; delete S.game.date; delete S.game.venue; delete S.game.opp; delete S.game.type;
+    S.opp = r.opp || ''; S.date = r.date; S.venue = r.venue || 'home'; S.type = gtype(r);
     $('opp').value = S.opp; $('gdate').value = S.date;
     S.tab = 'game'; persist(); render();
   }
@@ -319,20 +336,20 @@ section{display:flex;flex-direction:column;gap:12px}
     return 'Statistik_' + nm + (suffix ? '_' + suffix : '') + '_' + today();
   }
   function exportCsv() {
-    var list = S.history.filter(function (x) { return S.filter === 'all' || x.venue === S.filter; })
+    var list = S.history.filter(function (x) { return inType(x) && (S.filter === 'all' || x.venue === S.filter); })
       .sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.id - b.id; });
     if (!list.length) return;
     var dec = function (v) { return String(Math.round(v * 10) / 10).replace('.', ','); };
     var pc = function (m, a) { return a ? dec(m / a * 100) : ''; };
     var q = function (v) { v = String(v); return /[;"\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
-    var head = ['Datum','Heim/Auswärts','Gegner','Punkte','FW Treffer','FW Versuche','FW %','2er Treffer','2er Versuche','2er %','3er Treffer','3er Versuche','3er %','Wurf Treffer','Wurf Versuche','Wurf %','Off. Rebounds','Def. Rebounds','Rebounds','Assists','Steals','Blocks','Ballverluste','Fouls'];
-    var cols = function (x, label, date, venue, opp) {
-      return [date, venue, opp, pts(x), x.ftm, x.fta, pc(x.ftm, x.fta), x.p2m, x.p2a, pc(x.p2m, x.p2a), x.p3m, x.p3a, pc(x.p3m, x.p3a),
+    var head = ['Datum','Heim/Auswärts','Art','Gegner','Punkte','FW Treffer','FW Versuche','FW %','2er Treffer','2er Versuche','2er %','3er Treffer','3er Versuche','3er %','Wurf Treffer','Wurf Versuche','Wurf %','Off. Rebounds','Def. Rebounds','Rebounds','Assists','Steals','Blocks','Ballverluste','Fouls'];
+    var cols = function (x, label, date, venue, opp, art) {
+      return [date, venue, art || '', opp, pts(x), x.ftm, x.fta, pc(x.ftm, x.fta), x.p2m, x.p2a, pc(x.p2m, x.p2a), x.p3m, x.p3a, pc(x.p3m, x.p3a),
         x.p2m + x.p3m, x.p2a + x.p3a, pc(x.p2m + x.p3m, x.p2a + x.p3a), x.oreb, x.dreb, x.oreb + x.dreb, x.ast, x.stl, x.blk, x.tov, x.pf];
     };
     var rows = [head];
     list.forEach(function (x) {
-      rows.push(cols(x, '', fmtDate(x.date), x.venue === 'home' ? 'Heim' : x.venue === 'away' ? 'Auswärts' : '', x.opp || ''));
+      rows.push(cols(x, '', fmtDate(x.date), x.venue === 'home' ? 'Heim' : x.venue === 'away' ? 'Auswärts' : '', x.opp || '', TYPES[gtype(x)]));
     });
     var tot = blank(); list.forEach(function (x) { Object.keys(tot).forEach(function (k) { tot[k] += x[k]; }); });
     rows.push([]);
@@ -342,7 +359,9 @@ section{display:flex;flex-direction:column;gap:12px}
     // Prozentwerte im Schnitt = Quote der Summen; Zahlen mit einer Nachkommastelle
     rows.push(a.map(function (v, i) { return typeof v === 'number' ? dec(v) : v; }));
     var csv = '\uFEFF' + rows.map(function (r) { return r.map(q).join(';'); }).join('\r\n');
-    download(fileBase(S.filter === 'all' ? '' : S.filter === 'home' ? 'Heim' : 'Auswaerts') + '.csv', csv, 'text/csv;charset=utf-8');
+    var sfx = [S.tfilter === 'comp' ? '' : S.tfilter === 'season' ? 'Saison' : S.tfilter === 'playoff' ? 'Playoffs' : 'Testspiele',
+      S.filter === 'all' ? '' : S.filter === 'home' ? 'Heim' : 'Auswaerts'].filter(Boolean).join('_');
+    download(fileBase(sfx) + '.csv', csv, 'text/csv;charset=utf-8');
   }
   function exportJson() {
     download(fileBase('Sicherung') + '.json', JSON.stringify(payload(), null, 2), 'application/json');
@@ -368,13 +387,13 @@ section{display:flex;flex-direction:column;gap:12px}
   function num(v) { var n = Math.round(Number(String(v == null ? '' : v).replace(',', '.'))); return isFinite(n) && n > 0 ? n : 0; }
   function normRec(x, id) {
     var r = blank(); Object.keys(r).forEach(function (k) { r[k] = num(x[k]); });
-    r.id = id; r.date = normDate(x.date); r.venue = x.venue === 'away' ? 'away' : (x.venue === 'home' ? 'home' : ''); r.opp = String(x.opp || '').trim();
+    r.id = id; r.date = normDate(x.date); r.venue = x.venue === 'away' ? 'away' : (x.venue === 'home' ? 'home' : ''); r.opp = String(x.opp || '').trim(); r.type = gtype(x);
     return r;
   }
-  function sig(r) { return [r.date, r.venue, r.opp].concat(Object.keys(blank()).map(function (k) { return r[k]; })).join('|'); }
+  function sig(r) { return [r.date, r.venue, gtype(r), r.opp].concat(Object.keys(blank()).map(function (k) { return r[k]; })).join('|'); }
   function recsFromCsv(text) {
     var rows = parseCsv(text), head = (rows[0] || []).map(function (h) { return h.trim().toLowerCase(); });
-    var map = { 'datum':'date','heim/auswärts':'venue','gegner':'opp','fw treffer':'ftm','fw versuche':'fta','2er treffer':'p2m','2er versuche':'p2a',
+    var map = { 'datum':'date','heim/auswärts':'venue','art':'type','gegner':'opp','fw treffer':'ftm','fw versuche':'fta','2er treffer':'p2m','2er versuche':'p2a',
       '3er treffer':'p3m','3er versuche':'p3a','off. rebounds':'oreb','def. rebounds':'dreb','assists':'ast','steals':'stl','blocks':'blk','ballverluste':'tov','fouls':'pf' };
     var idx = {}; head.forEach(function (h, i) { if (map[h]) idx[map[h]] = i; });
     if (idx.date === undefined) throw new Error('Spalte „Datum“ fehlt – ist das eine Export-Datei dieser Seite?');
@@ -382,7 +401,8 @@ section{display:flex;flex-direction:column;gap:12px}
     rows.slice(1).forEach(function (r) {
       var ds = (r[idx.date] || '').trim();
       if (!/^(\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})$/.test(ds)) return;
-      var x = { date: ds, opp: r[idx.opp] || '', venue: /^heim/i.test(r[idx.venue] || '') ? 'home' : /^ausw/i.test(r[idx.venue] || '') ? 'away' : '' };
+      var x = { date: ds, opp: r[idx.opp] || '', venue: /^heim/i.test(r[idx.venue] || '') ? 'home' : /^ausw/i.test(r[idx.venue] || '') ? 'away' : '',
+        type: /^play/i.test(r[idx.type] || '') ? 'playoff' : /^(test|freund)/i.test(r[idx.type] || '') ? 'friendly' : 'season' };
       Object.keys(blank()).forEach(function (k) { x[k] = idx[k] === undefined ? 0 : r[idx[k]]; });
       out.push(x);
     });
@@ -465,7 +485,7 @@ section{display:flex;flex-direction:column;gap:12px}
     var fmt = function (v) { return v === null ? 'kein Versuch' : isPct ? Math.round(v) + ' %' : String(v); };
     var info = function (x) {
       var v = x.venue === 'away' ? 'Auswärts' : (x.venue === 'home' ? 'Heim' : '');
-      var t = fmtDate(x.date) + (v ? ' · ' + v : '') + (x.opp ? ' · gegen ' + x.opp : '');
+      var t = fmtDate(x.date) + (gtype(x) !== 'season' ? ' · ' + TYPES[gtype(x)] : '') + (v ? ' · ' + v : '') + (x.opp ? ' · gegen ' + x.opp : '');
       if (isPct && c[4](x)) t += ' · ' + c[3](x) + '/' + c[4](x);
       return t;
     };
@@ -533,6 +553,9 @@ section{display:flex;flex-direction:column;gap:12px}
     $('bannerText').textContent = editing ? 'Du bearbeitest das Spiel' + (er ? ' vom ' + fmtDate(er.date) : '') : '';
     $('vHome').className = S.venue === 'home' ? 'on' : '';
     $('vAway').className = S.venue === 'away' ? 'on' : '';
+    [['tSeason', 'season'], ['tPlayoff', 'playoff'], ['tFriendly', 'friendly']].forEach(function (t) {
+      $(t[0]).className = S.type === t[1] ? 'on' : ''; $(t[0]).setAttribute('aria-pressed', S.type === t[1]);
+    });
     $('vHome').setAttribute('aria-pressed', S.venue === 'home');
     $('vAway').setAttribute('aria-pressed', S.venue === 'away');
     $('reset').disabled = total(g) === 0;
@@ -560,20 +583,26 @@ section{display:flex;flex-direction:column;gap:12px}
 
     var nm = S.name.trim(), num = S.number.trim();
     $('playerTitle').textContent = (nm || 'Mein Spieler') + (num ? ' #' + num : '');
-    var allG = h;
+    var tc = function (t) { return h.filter(function (x) { return gtype(x) === t; }).length; };
+    [['sComp', 'comp', 'Gesamt', tc('season') + tc('playoff')], ['sSeason', 'season', 'Saison', tc('season')],
+     ['sPlayoff', 'playoff', 'Playoffs', tc('playoff')], ['sFriendly', 'friendly', 'Testspiele', tc('friendly')]].forEach(function (t) {
+      $(t[0]).innerHTML = t[2] + '<small>' + t[3] + (t[3] === 1 ? ' Spiel' : ' Spiele') + '</small>';
+      $(t[0]).className = S.tfilter === t[1] ? 'on' : ''; $(t[0]).setAttribute('aria-pressed', S.tfilter === t[1]);
+    });
+    var allG = h.filter(inType);
     var cnt = function (v) { return allG.filter(function (x) { return x.venue === v; }).length; };
-    $('fAll').textContent = 'Gesamt (' + allG.length + ')';
+    $('fAll').textContent = 'Alle (' + allG.length + ')';
     $('fHome').textContent = 'Heim (' + cnt('home') + ')';
     $('fAway').textContent = 'Auswärts (' + cnt('away') + ')';
     [['fAll', 'all'], ['fHome', 'home'], ['fAway', 'away']].forEach(function (f) {
       $(f[0]).className = S.filter === f[1] ? 'on' : '';
       $(f[0]).setAttribute('aria-pressed', S.filter === f[1]);
     });
-    if (S.filter !== 'all') h = allG.filter(function (x) { return x.venue === S.filter; });
+    h = S.filter === 'all' ? allG : allG.filter(function (x) { return x.venue === S.filter; });
     n = h.length;
     var scope = S.filter === 'home' ? ' (Heim)' : S.filter === 'away' ? ' (Auswärts)' : '';
-    $('gamesLabel').textContent = (n === 1 ? '1 Spiel' : n + ' Spiele') + (S.filter === 'all' ? ' in der Saison' : scope);
-    $('noGames').textContent = allG.length === 0
+    $('gamesLabel').textContent = (n === 1 ? '1 Spiel' : n + ' Spiele') + ' · ' + (S.tfilter === 'comp' ? 'Saison + Playoffs' : S.tfilter === 'season' ? 'Saison' : S.tfilter === 'playoff' ? 'Playoffs' : 'Testspiele') + scope;
+    $('noGames').textContent = S.history.length === 0
       ? 'Noch kein Spiel gespeichert. Erfasse ein Spiel und tippe auf „Spiel speichern“, dann erscheinen hier die Schnitte.'
       : 'Keine Spiele in dieser Auswahl.';
     $('noGames').classList.toggle('hidden', n !== 0);
@@ -593,7 +622,7 @@ section{display:flex;flex-direction:column;gap:12px}
     renderCharts(h);
     $('games').innerHTML = h.map(function (x) {
       var v = x.venue === 'away' ? 'Auswärts' : (x.venue === 'home' ? 'Heim' : '');
-      var title = (v ? v + ' · ' : '') + (x.opp ? 'gegen ' + esc(x.opp) : 'Spiel');
+      var title = (gtype(x) !== 'season' ? TYPES[gtype(x)] + ' · ' : '') + (v ? v + ' · ' : '') + (x.opp ? 'gegen ' + esc(x.opp) : 'Spiel');
       return '<div class="card game"><div class="p"><b>' + pts(x) + '</b><span>PKT</span></div><div class="i"><strong>' + title +
         ' <em>· ' + esc(fmtDate(x.date)) + '</em></strong>' +
         '<span>REB ' + (x.oreb + x.dreb) + ' · AST ' + x.ast + ' · STL ' + x.stl + ' · BLK ' + x.blk + ' · TO ' + x.tov + '</span>' +
@@ -613,6 +642,8 @@ section{display:flex;flex-direction:column;gap:12px}
     else if (a === 'filter') { S.filter = b.getAttribute('data-v'); render(); }
     else if (a === 'edit') startEdit(Number(b.getAttribute('data-id')));
     else if (a === 'cancel') cancelEdit();
+    else if (a === 'gtype') { S.type = b.getAttribute('data-v'); persist(); render(); }
+    else if (a === 'tfilter') { S.tfilter = b.getAttribute('data-v'); render(); }
     else if (a === 'venue') { S.venue = b.getAttribute('data-v'); persist(); render(); }
     else if (a === 'rem') remove(b.getAttribute('data-k').split(','));
     else if (a === 'reset') reset();

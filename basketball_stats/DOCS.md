@@ -16,23 +16,29 @@ Unterwegs erreichst du die Seite auf demselben Weg wie Home Assistant selbst, zu
 Reiter **Spiel erfassen**:
 
 1. **Gegner** und **Datum** eintragen, **Heimspiel** oder **Auswärts** wählen.
-2. Während des Spiels mittippen:
+2. Die Art des Spiels wählen: **Saison**, **Playoffs** oder **Testspiel**. Die Auswahl bleibt für das nächste Spiel stehen.
+3. Während des Spiels mittippen:
    - **Würfe** (Freiwurf, 2er, 3er): **Treffer** oder **Fehlwurf** antippen. Punkte und Quoten rechnet die Seite selbst aus.
    - **Spielzüge**: Offensiv- und Defensiv-Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls über die Plus-Kachel hochzählen.
-3. Vertippt? **Rückgängig** nimmt die letzte Eingabe zurück; mit **−** lässt sich jeder Wert einzeln korrigieren.
-4. Nach dem Spiel **Spiel speichern**. Das Spiel wandert in die Saison, die Eingabe ist wieder leer.
+4. Vertippt? **Rückgängig** nimmt die letzte Eingabe zurück; mit **−** lässt sich jeder Wert einzeln korrigieren.
+5. Nach dem Spiel **Spiel speichern**. Das Spiel wandert in die Auswertung, die Eingabe ist wieder leer.
 
 **Aktuelles Spiel leeren** verwirft die laufende Eingabe. Zur Sicherheit muss die Schaltfläche zweimal angetippt werden.
 
 Oben rechts steht der Speicherstatus: **Gespeichert** heißt, die Daten liegen in Home Assistant. Bei **Offline – nur lokal gespeichert** bleiben die Eingaben zunächst im Browser und werden mit der nächsten Eingabe bei bestehender Verbindung übertragen.
 
-## Saison auswerten
+## Auswerten
 
-Reiter **Saison**:
+Reiter **Auswertung**:
 
-- **Schnitt pro Spiel** und **Trefferquoten** über alle gespeicherten Spiele.
+- Auswahl der Spielart – sie gilt für alle Zahlen, Diagramme, die Spielliste und den CSV-Export:
+  - **Gesamt**: Saison und Playoffs zusammen, ohne Testspiele
+  - **Saison**: nur Saisonspiele
+  - **Playoffs**: nur Playoff-Spiele
+  - **Testspiele**: eigene, getrennte Statistik für Freundschafts- und Testspiele
+- **Schnitt pro Spiel** und **Trefferquoten** über die Spiele der gewählten Art.
 - Filter **Alle / Heim / Auswärts**.
-- **Verlauf**: Diagramme über die Saison, ein Balken pro Spiel in zeitlicher Reihenfolge.
+- **Verlauf**: Diagramme über den Zeitverlauf, ein Balken pro Spiel in zeitlicher Reihenfolge.
   - Über die Auswahl-Schaltflächen legst du fest, welche Statistiken angezeigt werden: Punkte, Wurf-, Zweier-, Dreier- und Freiwurfquote, Rebounds (gesamt, offensiv, defensiv), Assists, Steals, Blocks, Ballverluste und Fouls. Jede gewählte Statistik bekommt ein eigenes Diagramm.
   - Die gestrichelte Linie ist der Durchschnitt, der Wert steht oben rechts (Ø).
   - Einen Balken antippen (am Rechner: mit der Maus darüberfahren) zeigt Wert, Datum und Gegner dieses Spiels, bei Quoten zusätzlich Treffer/Versuche.
@@ -43,7 +49,7 @@ Reiter **Saison**:
 
 | Schaltfläche | Zweck |
 | --- | --- |
-| **Statistik als CSV** | Tabelle für Excel/Numbers mit allen Spielen, Summe und Schnitt pro Spiel. Der aktive Filter (Heim/Auswärts) wird berücksichtigt. |
+| **Statistik als CSV** | Tabelle für Excel/Numbers mit allen Spielen, Summe und Schnitt pro Spiel. Die gewählte Spielart und der Filter Heim/Auswärts werden berücksichtigt. |
 | **Sicherung (JSON)** | Vollständige Sicherung aller Daten, auch des laufenden Spiels. |
 | **Importieren (CSV oder JSON)** | Liest eine Export-Datei dieser Seite ein. Bereits vorhandene Spiele werden erkannt und nicht doppelt angelegt. |
 
