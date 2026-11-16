@@ -1,16 +1,65 @@
-# Basketball-Stats – Home-Assistant-Add-on-Repository
+# Basketball-Stats – Home-Assistant-Add-on
 
-Dieses Repository enthält das Home-Assistant-Add-on **Basketball-Stats** zum Erfassen von Basketball-Statistiken.
+Ein Add-on für Home Assistant, mit dem du die Statistiken eines Basketballspielers Spiel für Spiel erfasst und über die Saison auswertest. Gedacht für das Mittippen am Spielfeldrand auf dem Handy; die Auswertung funktioniert genauso am Rechner.
+
+**Was es kann**
+
+- Würfe erfassen (Freiwurf, 2er, 3er – Treffer und Fehlwürfe), dazu Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls
+- Punkte und Trefferquoten automatisch berechnen
+- Jedes Spiel mit Datum, Gegner und Heim/Auswärts speichern
+- Saison-Auswertung: Schnitt pro Spiel, Trefferquoten, Filter nach Heim und Auswärts
+- Export als CSV (für Excel/Numbers) und als JSON-Sicherung, Import beider Formate
+- Nur über Home Assistant erreichbar – kein offener Port, Daten im Home-Assistant-Backup
 
 ## Installation
 
-1. In Home Assistant **Einstellungen → Add-ons → Add-on-Store** öffnen.
-2. Oben rechts im Menü **Repositories** wählen und diese URL hinzufügen:
-   `https://github.com/david120378/basketball-stats-ha`
-3. Das Add-on **Basketball-Stats** installieren und starten.
+Voraussetzung: Home Assistant OS oder Supervised (Add-ons werden unterstützt), Architektur `amd64` oder `aarch64`.
 
-## Add-ons
+1. In Home Assistant **Einstellungen → Add-ons → Add-on-Store** öffnen (in neueren Versionen heißt der Bereich **Apps**).
+2. Oben rechts im Menü **⋮ → Repositories** wählen und diese URL hinzufügen:
 
-| Add-on | Beschreibung |
+   ```
+   https://github.com/david120378/basketball-stats-ha
+   ```
+
+3. Im Store nach **Basketball-Stats** suchen, **Installieren** und danach **Starten**.
+4. Optional **In der Seitenleiste anzeigen** aktivieren – der Eintrag heißt **Basketball**.
+
+## Benutzung in Kürze
+
+1. Seite über die Seitenleiste öffnen, **Spieler** und **Nummer** eintragen.
+2. Im Reiter **Spiel erfassen** Gegner, Datum und Heim/Auswärts setzen und während des Spiels Würfe und Spielzüge antippen. **Rückgängig** korrigiert die letzte Eingabe.
+3. Nach dem Spiel **Spiel speichern**.
+4. Im Reiter **Saison** Schnitt, Quoten und alle Spiele ansehen, Spiele bearbeiten oder löschen, exportieren und importieren.
+
+Die ausführliche Anleitung steht in [basketball_stats/DOCS.md](basketball_stats/DOCS.md) und in Home Assistant im Reiter **Dokumentation** des Add-ons.
+
+## Versionierung
+
+Das Add-on folgt [Semantic Versioning](https://semver.org/lang/de/) (`MAJOR.MINOR.PATCH`):
+
+| Stelle | Wann erhöhen | Beispiel |
+| --- | --- | --- |
+| PATCH | Fehlerbehebung, Doku, Kleinigkeiten | 1.0.0 → 1.0.1 |
+| MINOR | Neue Funktion, bestehende Daten bleiben nutzbar | 1.0.1 → 1.1.0 |
+| MAJOR | Änderung, die bestehende Daten oder die Bedienung bricht | 1.1.0 → 2.0.0 |
+
+Home Assistant bietet ein Update nur an, wenn sich die Versionsnummer ändert. Für jede Veröffentlichung deshalb:
+
+1. `version` in [basketball_stats/config.yaml](basketball_stats/config.yaml) erhöhen.
+2. Einen Eintrag in [basketball_stats/CHANGELOG.md](basketball_stats/CHANGELOG.md) ergänzen – er erscheint in Home Assistant als Änderungsprotokoll.
+3. Committen, auf `main` pushen und den Commit mit `v<Version>` taggen, z. B. `v1.0.1`.
+
+Aktuelle Version: siehe [config.yaml](basketball_stats/config.yaml), Verlauf im [Änderungsprotokoll](basketball_stats/CHANGELOG.md).
+
+## Aufbau des Repositories
+
+| Pfad | Inhalt |
 | --- | --- |
-| [Basketball-Stats](basketball_stats/DOCS.md) | Basketball-Statistiken erfassen – nur über Home Assistant (Ingress) erreichbar |
+| `repository.yaml` | Kennzeichnet das Repository als Add-on-Repository |
+| `basketball_stats/config.yaml` | Add-on-Konfiguration inkl. Version |
+| `basketball_stats/Dockerfile` | Container-Image (Node 20) |
+| `basketball_stats/server.js` | Kleiner Server ohne Abhängigkeiten: liefert die Seite aus und speichert die Daten |
+| `basketball_stats/index.html` | Die Seite selbst |
+| `basketball_stats/DOCS.md` | Anleitung, in Home Assistant sichtbar |
+| `basketball_stats/CHANGELOG.md` | Änderungsprotokoll, in Home Assistant sichtbar |
