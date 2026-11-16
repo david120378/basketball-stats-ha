@@ -2,6 +2,10 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.5.1 – 2026-11-16
+
+- Behoben: Das Datumsfeld ragte auf dem iPhone bei aufgeklappten Spieldaten über den Rahmen hinaus und war niedriger als die anderen Felder
+
 ## 1.5.0 – 2026-11-16
 
 - Erfassungsansicht kompakt: Würfe, Spielzüge, Rückgängig und Speichern passen ohne Scrollen auf einen Handy-Bildschirm und füllen die verfügbare Höhe
