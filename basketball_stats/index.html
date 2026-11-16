@@ -169,6 +169,24 @@ body.capture .wrap{min-height:100vh;min-height:100dvh;display:flex;flex-directio
 .field input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
 .meta .in .row{min-width:0}
 .meta .in .field{min-width:0;max-width:100%}
+/* Vergleich */
+nav button{padding:0 4px}
+#viewCompare{padding-top:16px}
+.tblwrap{overflow-x:auto;padding:2px 0}
+.tblwrap table{border-collapse:collapse;width:100%;font-size:14px}
+.tblwrap th,.tblwrap td{padding:9px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tblwrap tr:last-child td{border-bottom:none}
+.tblwrap th:first-child,.tblwrap td:first-child{text-align:left;position:sticky;left:0;background:#2A3832;color:var(--mu);font-weight:600}
+.tblwrap thead th{color:var(--tx);font-weight:700}
+.tblwrap td{color:var(--tx)}
+.tblwrap td.best{color:var(--gold);font-weight:700;background:rgba(233,180,76,.10)}
+.hbars{display:flex;flex-direction:column;gap:10px}
+.hb{display:grid;grid-template-columns:minmax(0,104px) 1fr 56px;gap:10px;align-items:center}
+.hb .nm{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .tr{height:18px;border-left:1px solid var(--line2)}
+.hb .tr i{display:block;height:100%;background:var(--gold);border-radius:0 4px 4px 0;min-width:2px}
+.hb .tr i.zero{background:var(--mu);opacity:.6}
+.hb .v{font:400 22px/1 'Instrument Serif',Georgia,serif;text-align:right;white-space:nowrap}
 .hidden{display:none!important}
 </style>
 </head>
@@ -186,6 +204,7 @@ body.capture .wrap{min-height:100vh;min-height:100dvh;display:flex;flex-directio
 <nav aria-label="Ansicht">
   <button type="button" id="tabGame" data-act="tab" data-v="game">Spiel erfassen</button>
   <button type="button" id="tabSeason" data-act="tab" data-v="season">Auswertung</button>
+  <button type="button" id="tabCompare" data-act="tab" data-v="compare">Vergleich</button>
 </nav>
 
 <main id="viewGame">
@@ -265,6 +284,23 @@ body.capture .wrap{min-height:100vh;min-height:100dvh;display:flex;flex-directio
     <section aria-label="Alle Spiele"><h3>Alle Spiele</h3><div id="games" style="display:flex;flex-direction:column;gap:12px"></div></section>
   </div>
   <button type="button" class="reset hidden" id="delPlayer" data-act="delplayer"></button>
+</main>
+
+<main id="viewCompare" class="hidden">
+  <div class="who"><h2>Vergleich</h2><span id="cmpLabel"></span></div>
+  <div class="pick" id="cmpPlayers" role="group" aria-label="Spieler für den Vergleich auswählen"></div>
+  <div class="seg" id="cmpType" role="group" aria-label="Art der Spiele auswählen"></div>
+  <div class="card empty hidden" id="cmpEmpty"></div>
+  <div id="cmpBody" style="display:flex;flex-direction:column;gap:20px">
+    <section aria-label="Vergleich als Diagramm"><h3>Im Diagramm</h3>
+      <div class="pick" id="cmpStat" role="group" aria-label="Statistik für das Diagramm auswählen"></div>
+      <div class="card chart" id="cmpChart"></div>
+    </section>
+    <section aria-label="Alle Werte im Vergleich"><h3>Alle Werte</h3>
+      <div class="card tblwrap"><table id="cmpTable"></table></div>
+      <p class="note" style="text-align:left">Zählwerte als Schnitt pro Spiel, Quoten über alle Würfe. Hervorgehoben ist der beste Wert je Zeile; bei Ballverlusten und Fouls der niedrigste.</p>
+    </section>
+  </div>
 </main>
 </div>
 
@@ -752,6 +788,62 @@ body.capture .wrap{min-height:100vh;min-height:100dvh;display:flex;flex-directio
     card.querySelector('.read span').textContent = b.getAttribute('data-t');
   }
 
+  // ---- Vergleich der Spieler ----
+  var cmpOff = {}, cmpStat = 'pts';
+  function plabel(x) { var nm = String(x.name || '').trim(), nr = String(x.number || '').trim(); return (nm || 'Neuer Spieler') + (nr ? ' #' + nr : ''); }
+  function renderCompare() {
+    stash();
+    var typeOk = function (x) { var t = gtype(x); return S.tfilter === 'comp' ? t !== 'friendly' : t === S.tfilter; };
+    $('cmpPlayers').innerHTML = P.list.map(function (x) {
+      var on = !cmpOff[x.id];
+      return '<button type="button" data-act="cmpp" data-id="' + x.id + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '">' + esc(plabel(x)) + '</button>';
+    }).join('');
+    $('cmpType').innerHTML = [['comp', 'Gesamt'], ['season', 'Saison'], ['playoff', 'Playoffs'], ['friendly', 'Testspiele']].map(function (t) {
+      var on = S.tfilter === t[0];
+      return '<button type="button" data-act="tfilter" data-v="' + t[0] + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '" style="font-size:13px">' + t[1] + '</button>';
+    }).join('');
+    var rows = P.list.filter(function (x) { return !cmpOff[x.id]; }).map(function (x) {
+      var list = (Array.isArray(x.history) ? x.history : []).filter(typeOk).map(function (r) { return Object.assign(blank(), r); });
+      var v = {};
+      CHARTS.forEach(function (c) {
+        if (!list.length) { v[c[0]] = null; return; }
+        var m = 0, a = 0; list.forEach(function (r) { m += c[3](r); if (c[4]) a += c[4](r); });
+        v[c[0]] = c[4] ? (a ? m / a * 100 : null) : m / list.length;
+      });
+      return { p: x, n: list.length, v: v };
+    });
+    var scope = S.tfilter === 'comp' ? 'Saison + Playoffs' : S.tfilter === 'season' ? 'Saison' : S.tfilter === 'playoff' ? 'Playoffs' : 'Testspiele';
+    $('cmpLabel').textContent = rows.length + ' Spieler · ' + scope + ' · alle Mannschaften';
+    var few = P.list.length < 2, none = !few && rows.length < 2;
+    $('cmpEmpty').classList.toggle('hidden', !few && !none);
+    $('cmpEmpty').textContent = few ? 'Für einen Vergleich brauchst du mindestens zwei Spieler. Lege oben über „+ Spieler“ einen weiteren an.' : 'Wähle mindestens zwei Spieler aus.';
+    $('cmpBody').classList.toggle('hidden', few || none);
+    if (few || none) return;
+    var fmtV = function (c, val) { return val === null ? '–' : c[4] ? Math.round(val) + ' %' : f1(val); };
+    $('cmpStat').innerHTML = CHARTS.map(function (c) {
+      var on = c[0] === cmpStat;
+      return '<button type="button" data-act="cmps" data-k="' + c[0] + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '">' + c[2] + '</button>';
+    }).join('');
+    var c0 = CHARTS.filter(function (c) { return c[0] === cmpStat; })[0] || CHARTS[0];
+    var mx = c0[4] ? 100 : Math.max.apply(null, rows.map(function (r) { return r.v[c0[0]] || 0; }).concat([0.0001]));
+    $('cmpChart').innerHTML = '<div class="top"><b>' + c0[1] + '</b><span>' + (c0[4] ? 'Quote über alle Würfe' : 'Schnitt pro Spiel') + '</span></div><div class="hbars">' +
+      rows.map(function (r) {
+        var val = r.v[c0[0]];
+        return '<div class="hb"><span class="nm">' + esc(plabel(r.p)) + '</span><span class="tr"><i class="' + (val ? '' : 'zero') + '" style="width:' + (val ? Math.max(1, val / mx * 100).toFixed(1) : 0) + '%"></i></span><span class="v">' + fmtV(c0, val) + '</span></div>';
+      }).join('') + '</div>';
+    var low = { tov: 1, pf: 1 };
+    var body = '<tr><td>Spiele</td>' + rows.map(function (r) { return '<td>' + r.n + '</td>'; }).join('') + '</tr>' + CHARTS.map(function (c) {
+      var vals = rows.map(function (r) { return r.v[c[0]]; }).filter(function (x) { return x !== null; });
+      var best = vals.length > 1 ? (low[c[0]] ? Math.min.apply(null, vals) : Math.max.apply(null, vals)) : null;
+      var allSame = vals.length > 1 && vals.every(function (x) { return fmtV(c, x) === fmtV(c, vals[0]); });
+      return '<tr><td>' + c[1] + '</td>' + rows.map(function (r) {
+        var val = r.v[c[0]], b = best !== null && !allSame && val !== null && fmtV(c, val) === fmtV(c, best);
+        return '<td class="' + (b ? 'best' : '') + '">' + fmtV(c, val) + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+    $('cmpTable').innerHTML = '<thead><tr><th>Statistik</th>' + rows.map(function (r) { return '<th>' + esc(plabel(r.p)) + '</th>'; }).join('') + '</tr></thead><tbody>' + body + '</tbody>';
+  }
+
   function render() {
     var g = S.game, h = S.history, n = h.length;
     $('pts').textContent = pts(g);
@@ -763,6 +855,9 @@ body.capture .wrap{min-height:100vh;min-height:100dvh;display:flex;flex-directio
     $('tabSeason').className = S.tab === 'season' ? 'on' : '';
     $('viewGame').classList.toggle('hidden', S.tab !== 'game');
     $('viewSeason').classList.toggle('hidden', S.tab !== 'season');
+    $('tabCompare').className = S.tab === 'compare' ? 'on' : '';
+    $('viewCompare').classList.toggle('hidden', S.tab !== 'compare');
+    if (S.tab === 'compare') renderCompare();
     $('bCsv').disabled = !S.history.length; $('bJson').disabled = !S.history.length && !P.list.some(function (x) { return x.id !== P.pid && x.history && x.history.length; });
     var pl = function (x) { var nm = String(x.name || '').trim(), nr = String(x.number || '').trim(); return (nm || 'Neuer Spieler') + (nr ? ' #' + nr : ''); };
     $('players').innerHTML = P.list.map(function (x) {
@@ -893,6 +988,8 @@ body.capture .wrap{min-height:100vh;min-height:100dvh;display:flex;flex-directio
     else if (a === 'cancel') cancelEdit();
     else if (a === 'team') { S.team = b.getAttribute('data-v'); $('team').value = S.team; persist(); render(); }
     else if (a === 'tmf') { var e2 = TF[Number(b.getAttribute('data-i'))]; S.tmf = e2 ? e2[0] : null; render(); }
+    else if (a === 'cmpp') { var ci = Number(b.getAttribute('data-id')); if (cmpOff[ci]) delete cmpOff[ci]; else cmpOff[ci] = true; render(); }
+    else if (a === 'cmps') { cmpStat = b.getAttribute('data-k'); render(); }
     else if (a === 'gtype') { S.type = b.getAttribute('data-v'); persist(); render(); }
     else if (a === 'tfilter') { S.tfilter = b.getAttribute('data-v'); render(); }
     else if (a === 'venue') { S.venue = b.getAttribute('data-v'); persist(); render(); }

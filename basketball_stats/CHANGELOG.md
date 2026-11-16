@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.7.0 – 2026-11-16
+
+- Neu: Reiter „Vergleich“ – Spieler nebeneinander vergleichen
+- Balkendiagramm für eine wählbare Statistik und Tabelle mit allen Werten, bester Wert je Zeile hervorgehoben
+- Spieler für den Vergleich einzeln an- und abwählbar; Auswahl Gesamt / Saison / Playoffs / Testspiele gilt auch hier
+
 ## 1.6.0 – 2026-11-16
 
 - Neu: Mannschaft pro Spiel – für Spieler, die in mehreren Mannschaften spielen

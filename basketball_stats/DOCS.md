@@ -71,6 +71,15 @@ Reiter **Auswertung**:
   - Der Filter Alle / Heim / Auswärts gilt auch für die Diagramme. Die Auswahl der Statistiken merkt sich das jeweilige Gerät.
 - **Alle Spiele** als Liste: mit dem Stift ein Spiel nachträglich bearbeiten, mit dem Papierkorb löschen.
 
+## Spieler vergleichen
+
+Reiter **Vergleich** (ab zwei Spielern):
+
+- Oben wählst du, welche Spieler in den Vergleich eingehen, und ob **Gesamt**, **Saison**, **Playoffs** oder **Testspiele** verglichen werden.
+- **Im Diagramm**: eine Statistik auswählen, die Balken zeigen den Wert je Spieler.
+- **Alle Werte**: Tabelle mit allen Statistiken, eine Spalte pro Spieler. Der beste Wert je Zeile ist hervorgehoben – bei Ballverlusten und Fouls der niedrigste. Bei vielen Spielern lässt sich die Tabelle seitlich schieben.
+- Zählwerte sind Schnitte pro Spiel, Quoten rechnen über alle Würfe. Verglichen werden die Spiele aller Mannschaften eines Spielers.
+
 ## Export und Import
 
 | Schaltfläche | Zweck |

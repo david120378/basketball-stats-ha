@@ -10,6 +10,7 @@ Eine App für Home Assistant (früher „Add-on“), mit der du die Statistiken 
 - Punkte und Trefferquoten automatisch berechnen
 - Jedes Spiel mit Datum, Mannschaft, Gegner, Heim/Auswärts und Art (Saison, Playoffs, Testspiel) speichern
 - Auswertung: Schnitt pro Spiel und Trefferquoten, getrennt nach Mannschaft, nach Saison, Playoffs und Testspielen sowie Heim und Auswärts
+- Spieler miteinander vergleichen: Diagramm und Tabelle mit allen Werten
 - Verlaufsdiagramme – die angezeigten Statistiken sind frei wählbar
 - Export als CSV (für Excel/Numbers) und als JSON-Sicherung, Import beider Formate
 - Nur über Home Assistant erreichbar – kein offener Port, Daten im Home-Assistant-Backup
@@ -34,6 +35,7 @@ Voraussetzung: Home Assistant OS oder Supervised (Apps werden unterstützt), Arc
 2. Im Reiter **Spiel erfassen** unter **Spieldaten** Gegner, Datum, Heim/Auswärts und die Art des Spiels setzen und während des Spiels Würfe und Spielzüge antippen. **Rückgängig** korrigiert die letzte Eingabe.
 3. Nach dem Spiel **Spiel speichern**.
 4. Im Reiter **Auswertung** die Spielart wählen und Schnitt, Quoten, Verlaufsdiagramme und alle Spiele ansehen, Spiele bearbeiten oder löschen, exportieren und importieren.
+5. Im Reiter **Vergleich** mehrere Spieler nebeneinanderstellen.
 
 Die ausführliche Anleitung steht in [basketball_stats/DOCS.md](basketball_stats/DOCS.md) und in Home Assistant im Reiter **Dokumentation** der App.
 
