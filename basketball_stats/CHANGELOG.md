@@ -2,6 +2,13 @@
 
 Alle nennenswerten Änderungen an der App. Die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## 1.4.0 – 2026-11-16
+
+- Neu: mehrere Erfasser gleichzeitig – jeder Spieler wird einzeln gespeichert, sodass mehrere Geräte parallel verschiedene Spieler erfassen können, ohne sich zu überschreiben
+- Geräte gleichen sich alle paar Sekunden ab: neue Spieler, gespeicherte Spiele und Löschungen erscheinen automatisch auf den anderen Geräten
+- Eingaben ohne Verbindung bleiben auf dem Gerät und werden automatisch nachgesendet, sobald die Verbindung wieder steht
+- Vorhandene Daten werden beim Start automatisch ins neue Speicherformat übernommen
+
 ## 1.3.0 – 2026-11-16
 
 - Neu: mehrere Spieler – jeder mit eigenen Spielen, eigener Auswertung und eigenem laufenden Spiel

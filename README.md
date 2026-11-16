@@ -5,6 +5,7 @@ Eine App für Home Assistant (früher „Add-on“), mit der du die Statistiken 
 **Was es kann**
 
 - Mehrere Spieler führen, jeder mit eigenen Spielen und eigener Auswertung
+- Mehrere Erfasser gleichzeitig: jedes Gerät erfasst einen anderen Spieler, die Geräte gleichen sich laufend ab
 - Würfe erfassen (Freiwurf, 2er, 3er – Treffer und Fehlwürfe), dazu Rebounds, Assists, Steals, Blocks, Ballverluste und Fouls
 - Punkte und Trefferquoten automatisch berechnen
 - Jedes Spiel mit Datum, Gegner, Heim/Auswärts und Art (Saison, Playoffs, Testspiel) speichern
@@ -61,7 +62,7 @@ Aktuelle Version: siehe [config.yaml](basketball_stats/config.yaml), Verlauf im 
 | `repository.yaml` | Kennzeichnet das Repository als App-Repository |
 | `basketball_stats/config.yaml` | App-Konfiguration inkl. Version |
 | `basketball_stats/Dockerfile` | Container-Image (Node 20) |
-| `basketball_stats/server.js` | Kleiner Server ohne Abhängigkeiten: liefert die Seite aus und speichert die Daten |
+| `basketball_stats/server.js` | Kleiner Server ohne Abhängigkeiten: liefert die Seite aus und speichert die Daten je Spieler |
 | `basketball_stats/index.html` | Die Seite selbst |
 | `basketball_stats/DOCS.md` | Anleitung, in Home Assistant sichtbar |
 | `basketball_stats/CHANGELOG.md` | Änderungsprotokoll, in Home Assistant sichtbar |

@@ -171,7 +171,7 @@ section{display:flex;flex-direction:column;gap:12px}
   <section aria-label="Weitere Statistiken"><h2>Spielzüge</h2><div class="grid2" id="counters"></div></section>
   <button type="button" class="save" id="save" data-act="save">Spiel speichern</button>
   <button type="button" class="reset" id="reset" data-act="reset">Aktuelles Spiel leeren</button>
-  <p class="note">Die Daten werden auf dem Server gespeichert und sind auf allen Geräten gleich.</p>
+  <p class="note">Die Daten werden auf dem Server gespeichert und laufend mit allen Geräten abgeglichen.</p>
 </main>
 
 <main id="viewSeason" class="hidden">
@@ -270,12 +270,12 @@ section{display:flex;flex-direction:column;gap:12px}
       S.opp = prev.opp; S.date = prev.date; S.venue = prev.venue; S.type = prev.type;
       $('opp').value = S.opp; $('gdate').value = S.date;
     }
-    rememberActive(); persist(); render();
+    rememberActive(); saveLocal(); render(); pull(false);
   }
   function addPlayer() {
     stash();
     var id = Date.now(); P.list.push({ id: id, name: '', number: '' });
-    switchPlayer(id); S.tab = 'game'; render(); $('pname').focus();
+    switchPlayer(id); S.tab = 'game'; persist(); render(); $('pname').focus();
   }
   var delArmed = false, delTimer = null;
   function deletePlayer() {
@@ -284,8 +284,12 @@ section{display:flex;flex-direction:column;gap:12px}
     clearTimeout(delTimer); delArmed = false;
     var gone = P.pid;
     P.list = P.list.filter(function (x) { return x.id !== gone; });
+    delete dirty[gone];
     P.pid = P.list[0].id; loadPlayer(P.list[0]);
-    rememberActive(); persist(); render();
+    rememberActive(); saveLocal(); render();
+    setSync('Speichert …');
+    fetch('api/player/' + gone, { method:'DELETE' }).then(function (r) { setSync(r.ok ? 'Gespeichert' : 'Löschen nicht gespeichert'); })
+      .catch(function () { setSync('Offline – Löschen nicht gespeichert'); });
   }
   function cur() { return { id:P.pid, name:S.name, number:S.number, opp:S.opp, date:S.date, venue:S.venue, type:S.type, editId:S.editId, draft:S.draft, game:S.game, history:S.history }; }
   function loadPlayer(d) {
@@ -305,25 +309,88 @@ section{display:flex;flex-direction:column;gap:12px}
   function hasP(d) { return d && (d.name || d.number || (d.history && d.history.length) || (d.game && total(Object.assign(blank(), d.game)) > 0)); }
 
   function setSync(t) { $('sync').textContent = t; }
-  function persist() {
-    try { localStorage.setItem(KEY, JSON.stringify(payload())); } catch (e) {}
+  // ---- Abgleich mit dem Server: jeder Spieler wird einzeln gespeichert, damit mehrere Geräte gleichzeitig erfassen können ----
+  var dirty = {}, sending = {}, inflight = 0, REV = {}, lastPull = null;
+  function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(payload())); } catch (e) {} }
+  function busy(id) { return !!(dirty[id] || sending[id]); }
+  function persist(all) {
+    if (all) P.list.forEach(function (x) { dirty[x.id] = true; });
+    dirty[P.pid] = true;
+    saveLocal();
     setSync('Speichert …');
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(function () {
-      saveTimer = null;
-      fetch('api/data', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload()) })
-        .then(function (r) { setSync(r.ok ? 'Gespeichert' : 'Nur lokal gespeichert'); })
-        .catch(function () { setSync('Offline – nur lokal gespeichert'); });
-    }, 400);
+    saveTimer = setTimeout(function () { saveTimer = null; push(); }, 400);
+  }
+  function syncState() {
+    if (inflight || saveTimer) return;
+    setSync(Object.keys(dirty).length ? 'Offline – nur lokal gespeichert' : 'Gespeichert');
+  }
+  function dropLocal(id) {
+    delete dirty[id];
+    P.list = P.list.filter(function (x) { return x.id !== id; });
+    if (!P.list.length) P.list = [{ id: Date.now() }];
+    if (!findP(P.pid)) { P.pid = P.list[0].id; loadPlayer(P.list[0]); rememberActive(); }
+    saveLocal(); render();
+  }
+  function push() {
+    stash();
+    Object.keys(dirty).forEach(function (k) {
+      var id = Number(k), pl = findP(id);
+      delete dirty[k];
+      if (!pl) return;
+      sending[id] = (sending[id] || 0) + 1; inflight++;
+      fetch('api/player/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(pl) })
+        .then(function (r) {
+          if (r.status === 410) { dropLocal(id); return null; }   // auf einem anderen Gerät gelöscht
+          if (!r.ok) throw new Error('save');
+          return r.json();
+        })
+        .then(function (j) { if (j && j.rev) REV[id] = Math.max(REV[id] || 0, j.rev); })
+        .catch(function () { dirty[id] = true; })
+        .then(function () { inflight--; sending[id]--; if (!sending[id]) delete sending[id]; syncState(); });
+    });
+    syncState();
+  }
+  function same(a, b) {
+    var f = function (o) { var c = Object.assign({}, o); delete c.rev; return JSON.stringify(c); };
+    return f(a) === f(b);
   }
   function pull(initial) {
-    if (saveTimer) return;
+    if (saveTimer || inflight) return;
     fetch('api/data', { cache:'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
-      if (hasData(d)) { apply(d); setSync('Gespeichert'); render(); }
-      else if (initial && hasData(payload())) { persist(); }
-      else { setSync('Bereit'); }
-    }).catch(function () { setSync('Offline – nur lokal'); });
+      if (saveTimer || inflight) return;                       // inzwischen wurde lokal weitergearbeitet
+      var srv = Array.isArray(d && d.players) ? d.players : [], del = Array.isArray(d && d.deleted) ? d.deleted : [];
+      if (!srv.length && !del.length) {
+        if (initial && hasData(payload())) persist(true); else setSync('Bereit');
+        return;
+      }
+      var raw = JSON.stringify(d);
+      if (raw === lastPull && !Object.keys(dirty).length) { syncState(); return; }
+      lastPull = raw;
+      stash();
+      var before = findP(P.pid);
+      var list = srv.map(function (sp) {
+        var loc = findP(sp.id);
+        if (loc && (busy(sp.id) || (REV[sp.id] || 0) > (sp.rev || 0))) return loc;   // lokale, noch nicht bestätigte Änderung behalten
+        REV[sp.id] = sp.rev || 0;
+        return sp;
+      });
+      P.list.forEach(function (loc) {                           // lokal neu angelegt, noch nicht auf dem Server
+        if (busy(loc.id) && del.indexOf(loc.id) < 0 && !list.some(function (x) { return x.id === loc.id; })) list.push(loc);
+      });
+      if (!list.length) list = [{ id: Date.now() }];
+      P.list = list;
+      var now = findP(P.pid);
+      if (!now) { P.pid = list[0].id; now = list[0]; rememberActive(); loadPlayer(now); }
+      else if (!same(before, now)) loadPlayer(now);
+      saveLocal(); syncState(); render();
+    }).catch(function () { setSync(Object.keys(dirty).length ? 'Offline – nur lokal gespeichert' : 'Offline – nur lokal'); });
   }
+  // Regelmäßig abgleichen: offene Änderungen nachsenden, sonst den Stand der anderen Geräte holen
+  setInterval(function () {
+    if (document.hidden || saveTimer || inflight) return;
+    if (Object.keys(dirty).length) push(); else pull(false);
+  }, 4000);
 
   function add(keys) { keys.forEach(function (k) { S.game[k] += 1; }); S.undo.push(keys); persist(); render(); }
   function remove(keys) {
@@ -476,7 +543,7 @@ section{display:flex;flex-direction:column;gap:12px}
     players.forEach(function (ip) {
       if (!ip || typeof ip !== 'object') return;
       var t = findP(Number(ip.id)) || P.list.filter(function (x) { return String(ip.name || '').trim() && same(x.name, ip.name) && same(x.number, ip.number); })[0];
-      if (!t) { t = { id: findP(Number(ip.id)) || !Number(ip.id) ? base + (k++) : Number(ip.id), name: String(ip.name || ''), number: String(ip.number || ''), history: [] }; P.list.push(t); newP++; }
+      if (!t) { t = { id: base + (k++), name: String(ip.name || ''), number: String(ip.number || ''), history: [] }; P.list.push(t); newP++; }
       if (!Array.isArray(t.history)) t.history = [];
       var seen = {}; t.history.forEach(function (r) { seen[sig(normRec(r, r.id))] = true; });
       (Array.isArray(ip.history) ? ip.history : []).forEach(function (x) {
@@ -486,7 +553,7 @@ section{display:flex;flex-direction:column;gap:12px}
         seen[sig(r)] = true; t.history.push(r); added++;
       });
     });
-    loadPlayer(findP(P.pid)); persist(); render();
+    loadPlayer(findP(P.pid)); persist(true); render();
     msg.textContent = added + (added === 1 ? ' Spiel importiert' : ' Spiele importiert') + (newP ? ', ' + newP + (newP === 1 ? ' Spieler neu angelegt' : ' Spieler neu angelegt') : '') +
       (dup ? ', ' + dup + ' bereits vorhanden (übersprungen).' : '.');
   }

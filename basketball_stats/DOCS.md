@@ -18,6 +18,21 @@ Mit dieser App erfasst du die Statistiken eines oder mehrerer Basketballspieler 
 - **Diesen Spieler löschen** (unten im Reiter Auswertung, zweimal antippen) entfernt den Spieler mit allen seinen Spielen. Der letzte Spieler lässt sich nicht löschen.
 - Welcher Spieler gerade gewählt ist, merkt sich jedes Gerät für sich.
 
+## Mit mehreren Erfassern gleichzeitig arbeiten
+
+Mehrere Personen können zur selben Zeit erfassen – jede auf ihrem eigenen Gerät und angemeldet in Home Assistant.
+
+1. Alle öffnen die Seite. Die Spieler legt eine Person an; sie erscheinen nach wenigen Sekunden auf allen Geräten.
+2. Jede Person wählt in der Leiste oben **ihren** Spieler und erfasst nur diesen.
+3. Nach dem Spiel speichert jede Person das Spiel ihres Spielers.
+
+Gut zu wissen:
+
+- Jeder Spieler wird einzeln gespeichert. Eingaben für verschiedene Spieler kommen sich deshalb nicht in die Quere.
+- Die Geräte gleichen sich etwa alle vier Sekunden ab. Gespeicherte Spiele und neue Spieler der anderen siehst du ohne Neuladen.
+- Erfassen zwei Geräte gleichzeitig **denselben** Spieler, gilt die zuletzt gespeicherte Eingabe – die des anderen Geräts kann verloren gehen. Pro Spieler also nur ein Erfasser.
+- Ohne Verbindung steht oben „Offline – nur lokal gespeichert“. Die Eingaben bleiben auf dem Gerät und werden automatisch nachgesendet, sobald die Verbindung wieder da ist. Die Seite so lange geöffnet lassen.
+
 Unterwegs erreichst du die Seite auf demselben Weg wie Home Assistant selbst, zum Beispiel über die Home-Assistant-App.
 
 ## Ein Spiel erfassen
@@ -34,7 +49,7 @@ Reiter **Spiel erfassen**:
 
 **Aktuelles Spiel leeren** verwirft die laufende Eingabe. Zur Sicherheit muss die Schaltfläche zweimal angetippt werden.
 
-Oben rechts steht der Speicherstatus: **Gespeichert** heißt, die Daten liegen in Home Assistant. Bei **Offline – nur lokal gespeichert** bleiben die Eingaben zunächst im Browser und werden mit der nächsten Eingabe bei bestehender Verbindung übertragen.
+Oben rechts steht der Speicherstatus: **Gespeichert** heißt, die Daten liegen in Home Assistant. Bei **Offline – nur lokal gespeichert** bleiben die Eingaben zunächst im Browser und werden automatisch übertragen, sobald die Verbindung wieder steht.
 
 ## Auswerten
 
@@ -69,7 +84,6 @@ Daten aus einer älteren Installation übernimmst du so: dort **Sicherung (JSON)
 - Die Daten liegen im App-Speicher (`/data/data.json`) und sind in jedem Home-Assistant-Backup enthalten.
 - Die App öffnet keinen Port nach außen. Sie beantwortet nur Anfragen, die über Home Assistant (Ingress) kommen; wer Home Assistant nicht nutzen darf, kommt nicht auf die Seite.
 - Alle Home-Assistant-Benutzer können die Seite öffnen, nicht nur Administratoren.
-- Erfassen zwei Geräte gleichzeitig, gewinnt die zuletzt gespeicherte Eingabe; Änderungen des anderen Geräts aus der Zwischenzeit können verloren gehen. Am besten erfasst während eines Spiels nur ein Gerät.
 
 ## Updates
 
